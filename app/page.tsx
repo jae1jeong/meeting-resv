@@ -30,7 +30,6 @@ export default function Home() {
         <Sidebar>
           <SidebarContent 
             currentMonth={currentMonth}
-            calendars={MY_CALENDARS}
           />
         </Sidebar>
 

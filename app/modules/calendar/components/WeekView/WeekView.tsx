@@ -1,8 +1,8 @@
 "use client"
 
 import { CalendarEvent } from '../CalendarEvent'
-import { WeekViewProps } from './WeekView.types'
-import { formatTime, generateTimeSlots } from './WeekView.utils'
+import { WeekViewProps } from './weekview.types'
+import { formatTime, generateTimeSlots } from './weekview.utils'
 
 const WEEK_DAYS = ["일", "월", "화", "수", "목", "금", "토"]
 const WEEK_DATES = [3, 4, 5, 6, 7, 8, 9] // Temporary, should be calculated dynamically

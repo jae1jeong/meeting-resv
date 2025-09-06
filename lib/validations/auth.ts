@@ -16,21 +16,14 @@ export const loginSchema = z.object({
 
 // Update profile validation
 export const updateProfileSchema = z.object({
-  name: nameSchema.optional(),
-  email: emailSchema.optional()
-}).refine(
-  (data) => Object.keys(data).length > 0,
-  'At least one field must be provided for update'
-)
+  name: nameSchema
+})
 
 // Change password validation
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
+  currentPassword: z.string().min(1, '현재 비밀번호를 입력해주세요'),
   newPassword: passwordSchema
-}).refine(
-  (data) => data.currentPassword !== data.newPassword,
-  'New password must be different from current password'
-)
+})
 
 // Export types
 export type RegisterInput = z.infer<typeof registerSchema>

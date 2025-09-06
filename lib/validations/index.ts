@@ -12,7 +12,7 @@ import { errorResponse } from '@/lib/api-response'
 
 export function handleValidationError(error: unknown): NextResponse {
   if (error instanceof ZodError) {
-    const errors = error.errors.map(err => ({
+    const errors = error.issues.map(err => ({
       field: err.path.join('.'),
       message: err.message
     }))
@@ -26,7 +26,7 @@ export function handleValidationError(error: unknown): NextResponse {
 
 // Validation wrapper for API routes
 export function validateRequest<T>(
-  schema: any,
+  schema: { parse: (data: unknown) => T },
   data: unknown
 ): { success: true; data: T } | { success: false; error: NextResponse } {
   try {

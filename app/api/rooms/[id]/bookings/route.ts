@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse, paginatedResponse } from '@/lib/api-response'
+import { errorResponse, paginatedResponse } from '@/lib/api-response'
 import { BookingResponse } from '@/types/api'
 import { Prisma } from '@prisma/client'
 
@@ -80,7 +80,7 @@ export async function GET(
               updatedAt: true
             }
           },
-          participants: includeParticipants ? {
+          participants: {
             include: {
               user: {
                 select: {
@@ -92,7 +92,7 @@ export async function GET(
                 }
               }
             }
-          } : false,
+          },
           recurringPattern: includeRecurring ? {
             include: {
               exceptions: true

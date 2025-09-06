@@ -1,2 +1,2 @@
-export { WeekView } from './WeekView'
-export type { WeekViewProps } from './WeekView.types'
+export { WeekView } from './weekview'
+export type { WeekViewProps } from './weekview.types'

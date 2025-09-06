@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/api-response'
 import { UpdateBookingRequest, BookingResponse } from '@/types/api'
 import { checkRoomAvailability, validateTimeSlot } from '@/lib/booking-utils'
+import { Prisma } from '@prisma/client'
+import { Booking } from '@/app/modules/booking/types'
 
 // GET /api/bookings/[id] - Get single booking
 export async function GET(
@@ -107,7 +109,7 @@ export async function PUT(
     const { title, description, date, startTime, endTime, participantIds } = body
 
     // Prepare update data
-    const updateData: any = {}
+    const updateData: Prisma.BookingUpdateInput = {}
 
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description

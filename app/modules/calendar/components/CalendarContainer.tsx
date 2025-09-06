@@ -1,10 +1,9 @@
 "use client"
 
-import { WeekView } from "./WeekView/WeekView"
+import { WeekView } from "./WeekView/weekview"
 import { useCalendar } from "../hooks/useCalendar"
 import CalendarControls from "./CalendarControls/CalendarControls"
 import EventDetails from "@/app/features/event-details/EventDetails"
-import MiniCalendar from "./MiniCalendar/MiniCalendar"
 import { CalendarEvent } from "../types"
 
 interface CalendarContainerProps {

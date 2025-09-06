@@ -6,7 +6,7 @@ export interface BookingResponse extends Booking {
   room: MeetingRoom
   creator: UserResponse
   participants?: BookingParticipantWithUser[]
-  recurringPattern?: RecurringPatternWithExceptions
+  recurringPattern?: RecurringPatternWithExceptions | null
 }
 
 export interface BookingParticipantWithUser extends BookingParticipant {
@@ -21,7 +21,7 @@ export interface BookingWithDetails extends Booking {
   room: MeetingRoomWithGroup
   creator: UserResponse
   participants: BookingParticipantWithUser[]
-  recurringPattern?: RecurringPatternWithExceptions
+  recurringPattern?: RecurringPatternWithExceptions | null
 }
 
 export interface CreateBookingRequest {

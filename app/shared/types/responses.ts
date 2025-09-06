@@ -14,7 +14,7 @@ export interface ApiResponse<T = unknown> {
 export interface ApiError {
   code: string
   message: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 // Paginated response
@@ -63,7 +63,7 @@ export interface GroupResponse {
   updatedAt: string
 }
 
-export interface GroupListResponse extends PaginatedResponse<GroupResponse> {}
+export type GroupListResponse = PaginatedResponse<GroupResponse>
 
 // Room responses
 export interface RoomResponse {
@@ -77,7 +77,7 @@ export interface RoomResponse {
   updatedAt: string
 }
 
-export interface RoomListResponse extends PaginatedResponse<RoomResponse> {}
+export type RoomListResponse = PaginatedResponse<RoomResponse>
 
 // Booking responses
 export interface BookingResponse {
@@ -105,7 +105,7 @@ export interface BookingResponse {
   updatedAt: string
 }
 
-export interface BookingListResponse extends PaginatedResponse<BookingResponse> {}
+export type BookingListResponse = PaginatedResponse<BookingResponse>
 
 export interface BookingCreateResponse {
   booking: BookingResponse
@@ -165,7 +165,7 @@ export interface ErrorResponse {
     code: ErrorCode
     message: string
     field?: string // For validation errors
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   }
   timestamp: string
 }

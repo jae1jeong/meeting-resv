@@ -4,11 +4,13 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import { Role } from '@prisma/client'
+
+type GroupRole = 'ADMIN' | 'MEMBER'
+
 
 export interface AuthorizationResult {
   authorized: boolean
-  role?: Role
+  role?: GroupRole
   message?: string
 }
 
@@ -56,7 +58,7 @@ export async function isGroupAdmin(
 export async function getUserGroupRole(
   userId: string,
   groupId: string
-): Promise<Role | null> {
+): Promise<GroupRole | null> {
   const membership = await prisma.groupMember.findUnique({
     where: {
       userId_groupId: {
@@ -145,7 +147,7 @@ export async function getUserGroupIds(userId: string): Promise<string[]> {
     select: { groupId: true }
   })
 
-  return memberships.map(m => m.groupId)
+  return memberships.map((membership: { groupId: string }) => membership.groupId)
 }
 
 /**
@@ -160,5 +162,5 @@ export async function getUserAdminGroupIds(userId: string): Promise<string[]> {
     select: { groupId: true }
   })
 
-  return memberships.map(m => m.groupId)
+  return memberships.map((membership: { groupId: string }) => membership.groupId)
 }

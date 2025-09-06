@@ -48,7 +48,7 @@ export function GlassModal({
         className
       )}>
         {/* Header */}
-        {(title || onClose) && (
+        {title && (
           <div className="flex items-center justify-between mb-4">
             {title && (
               <h2 className="text-xl font-semibold text-white">{title}</h2>

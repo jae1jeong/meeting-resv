@@ -53,8 +53,8 @@ model GroupMember {
   role      Role     @default(MEMBER)
   joinedAt  DateTime @default(now())
   
-  user      User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: CASCADE)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   
   @@unique([userId, groupId])
   @@index([userId])
@@ -71,7 +71,7 @@ model MeetingRoom {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   
-  group       Group       @relation(fields: [groupId], references: [id], onDelete: CASCADE)
+  group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
   bookings    Booking[]
   
   @@index([groupId])
@@ -91,8 +91,8 @@ model Booking {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  room            MeetingRoom @relation(fields: [roomId], references: [id], onDelete: CASCADE)
-  creator         User        @relation(fields: [creatorId], references: [id], onDelete: CASCADE)
+  room            MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  creator         User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   participants    BookingParticipant[]
   recurringPattern RecurringPattern?
   
@@ -109,8 +109,8 @@ model BookingParticipant {
   userId      String
   addedAt     DateTime @default(now())
   
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: CASCADE)
-  user        User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@unique([bookingId, userId])
   @@index([bookingId])
@@ -127,7 +127,7 @@ model RecurringPattern {
   endDate         DateTime?          @db.Date
   occurrences     Int?               // Number of occurrences
   
-  booking         Booking             @relation(fields: [bookingId], references: [id], onDelete: CASCADE)
+  booking         Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   exceptions      RecurringException[]
 }
 
@@ -140,7 +140,7 @@ model RecurringException {
   newEndTime      String?         // For MODIFY type
   reason          String?
   
-  pattern         RecurringPattern @relation(fields: [patternId], references: [id], onDelete: CASCADE)
+  pattern         RecurringPattern @relation(fields: [patternId], references: [id], onDelete: Cascade)
   
   @@index([patternId])
   @@index([date])

@@ -23,12 +23,12 @@ export function MainLayout({ children, isLoaded = true, sidebarContent }: MainLa
       />
 
       {/* Navigation */}
-      <Header isLoaded={isLoaded} />
+      <Header />
 
       {/* Main Content */}
       <main className="relative h-screen w-full pt-20 flex">
         {/* Sidebar */}
-        <Sidebar isLoaded={isLoaded}>
+        <Sidebar>
           {sidebarContent}
         </Sidebar>
 

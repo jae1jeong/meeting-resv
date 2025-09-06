@@ -18,45 +18,52 @@ export class ValidationException extends Error {
 /**
  * Validate room creation/update data
  */
-export function validateRoomData(data: any): ValidationError[] {
+export function validateRoomData(data: unknown): ValidationError[] {
+  const room = data as {
+    name?: unknown
+    capacity?: unknown
+    location?: unknown
+    amenities?: unknown
+    groupId?: unknown
+  }
   const errors: ValidationError[] = []
 
   // Validate name
-  if (data.name !== undefined) {
-    if (typeof data.name !== 'string') {
+  if (room.name !== undefined) {
+    if (typeof room.name !== 'string') {
       errors.push({ field: 'name', message: 'Name must be a string' })
-    } else if (data.name.trim().length === 0) {
+    } else if (room.name.trim().length === 0) {
       errors.push({ field: 'name', message: 'Name cannot be empty' })
-    } else if (data.name.length > 100) {
+    } else if (room.name.length > 100) {
       errors.push({ field: 'name', message: 'Name cannot exceed 100 characters' })
     }
   }
 
   // Validate capacity
-  if (data.capacity !== undefined) {
-    if (typeof data.capacity !== 'number') {
+  if (room.capacity !== undefined) {
+    if (typeof room.capacity !== 'number') {
       errors.push({ field: 'capacity', message: 'Capacity must be a number' })
-    } else if (!Number.isInteger(data.capacity)) {
+    } else if (!Number.isInteger(room.capacity)) {
       errors.push({ field: 'capacity', message: 'Capacity must be an integer' })
-    } else if (data.capacity < 1) {
+    } else if (room.capacity < 1) {
       errors.push({ field: 'capacity', message: 'Capacity must be at least 1' })
-    } else if (data.capacity > 1000) {
+    } else if (room.capacity > 1000) {
       errors.push({ field: 'capacity', message: 'Capacity cannot exceed 1000' })
     }
   }
 
   // Validate location
-  if (data.location !== undefined && data.location !== null) {
-    if (typeof data.location !== 'string') {
+  if (room.location !== undefined && room.location !== null) {
+    if (typeof room.location !== 'string') {
       errors.push({ field: 'location', message: 'Location must be a string' })
-    } else if (data.location.length > 200) {
+    } else if (room.location.length > 200) {
       errors.push({ field: 'location', message: 'Location cannot exceed 200 characters' })
     }
   }
 
   // Validate amenities
-  if (data.amenities !== undefined) {
-    if (!Array.isArray(data.amenities)) {
+  if (room.amenities !== undefined) {
+    if (!Array.isArray(room.amenities)) {
       errors.push({ field: 'amenities', message: 'Amenities must be an array' })
     } else {
       const validAmenities = [
@@ -80,31 +87,33 @@ export function validateRoomData(data: any): ValidationError[] {
         'wheelchair_accessible'
       ]
 
-      data.amenities.forEach((amenity: any, index: number) => {
+      const amenitiesArray = room.amenities as unknown[]
+      for (let index = 0; index < amenitiesArray.length; index += 1) {
+        const amenity: unknown = amenitiesArray[index]
         if (typeof amenity !== 'string') {
-          errors.push({ 
-            field: `amenities[${index}]`, 
-            message: 'Each amenity must be a string' 
+          errors.push({
+            field: `amenities[${index}]`,
+            message: 'Each amenity must be a string'
           })
         } else if (!validAmenities.includes(amenity)) {
-          errors.push({ 
-            field: `amenities[${index}]`, 
-            message: `Invalid amenity: ${amenity}. Valid options: ${validAmenities.join(', ')}` 
+          errors.push({
+            field: `amenities[${index}]`,
+            message: `Invalid amenity: ${amenity}. Valid options: ${validAmenities.join(', ')}`
           })
         }
-      })
+      }
 
-      if (data.amenities.length > 20) {
+      if ((room.amenities as unknown[]).length > 20) {
         errors.push({ field: 'amenities', message: 'Cannot have more than 20 amenities' })
       }
     }
   }
 
   // Validate groupId
-  if (data.groupId !== undefined) {
-    if (typeof data.groupId !== 'string') {
+  if (room.groupId !== undefined) {
+    if (typeof room.groupId !== 'string') {
       errors.push({ field: 'groupId', message: 'Group ID must be a string' })
-    } else if (data.groupId.trim().length === 0) {
+    } else if (room.groupId.trim().length === 0) {
       errors.push({ field: 'groupId', message: 'Group ID cannot be empty' })
     }
   }
@@ -116,8 +125,8 @@ export function validateRoomData(data: any): ValidationError[] {
  * Validate pagination parameters
  */
 export function validatePaginationParams(
-  page: any,
-  pageSize: any
+  page: unknown,
+  pageSize: unknown
 ): { page: number; pageSize: number } | ValidationError[] {
   const errors: ValidationError[] = []
   

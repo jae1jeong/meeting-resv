@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
               updatedAt: true
             }
           },
-          participants: includeParticipants ? {
+          participants: {
             include: {
               user: {
                 select: {
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
                 }
               }
             }
-          } : false,
+          },
           recurringPattern: includeRecurring ? {
             include: {
               exceptions: true

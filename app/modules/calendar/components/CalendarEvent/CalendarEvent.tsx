@@ -1,7 +1,7 @@
 "use client"
 
 import { CalendarEventProps } from './CalendarEvent.types'
-import { calculateEventStyle, getEventColorStyle } from '../WeekView/WeekView.utils'
+import { calculateEventStyle, getEventColorStyle } from '../WeekView/weekview.utils'
 
 export function CalendarEvent({ event, onClick, variant = 'default' }: CalendarEventProps) {
   const positionStyle = calculateEventStyle(event.startTime, event.endTime)
