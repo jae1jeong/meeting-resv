@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse, paginatedResponse } from '@/lib/api-response'
-import { CreateBookingRequest, BookingResponse } from '@/types/api'
-import { checkRoomAvailability, validateTimeSlot } from '@/lib/booking-utils'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
+import { CreateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
+import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings - List bookings
@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               email: true,
+              emailVerified: true,
               name: true,
+              image: true,
               createdAt: true,
               updatedAt: true
             }
@@ -80,7 +82,9 @@ export async function GET(request: NextRequest) {
                 select: {
                   id: true,
                   email: true,
+                  emailVerified: true,
                   name: true,
+                  image: true,
                   createdAt: true,
                   updatedAt: true
                 }
@@ -207,7 +211,9 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             email: true,
+            emailVerified: true,
             name: true,
+            image: true,
             createdAt: true,
             updatedAt: true
           }
@@ -218,7 +224,9 @@ export async function POST(request: NextRequest) {
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }

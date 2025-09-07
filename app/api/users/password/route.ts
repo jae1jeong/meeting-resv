@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse } from '@/lib/api-response'
-import { ChangePasswordRequest } from '@/types/api'
-import { changePasswordSchema } from '@/lib/validations'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
+import { changePasswordSchema } from '@/packages/backend/validations'
 import bcrypt from 'bcryptjs'
 
 // PUT /api/users/password - Change user password
@@ -36,8 +35,8 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    if (!user) {
-      return errorResponse('사용자를 찾을 수 없습니다', 404)
+    if (!user || !user.password) {
+      return errorResponse('사용자를 찾을 수 없거나 비밀번호가 설정되지 않았습니다', 404)
     }
 
     // Verify current password
@@ -47,7 +46,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if new password is same as current
-    const isSamePassword = await bcrypt.compare(newPassword, user.password)
+    const isSamePassword = await bcrypt.compare(newPassword, user.password!)
     if (isSamePassword) {
       return errorResponse('새 비밀번호는 현재 비밀번호와 달라야 합니다', 400)
     }

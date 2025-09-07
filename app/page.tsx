@@ -1,9 +1,9 @@
 import Image from "next/image"
-import { Header } from "@/app/layouts/MainLayout"
-import { Sidebar } from "@/app/layouts/MainLayout"
-import { CalendarContainer } from "@/app/modules/calendar/components/CalendarContainer"
-import { SidebarContent } from "@/app/modules/calendar/components/SidebarContent"
-import { SAMPLE_EVENTS, MY_CALENDARS } from "@/app/modules/calendar/constants"
+import { Header } from "@/frontend/components/layout/MainLayout"
+import { Sidebar } from "@/frontend/components/layout/MainLayout"
+import { CalendarContainer } from "@/frontend/features/calendar/components/CalendarContainer"
+import { SidebarContent } from "@/frontend/features/calendar/components/SidebarContent"
+import { SAMPLE_EVENTS } from "@/frontend/features/calendar/constants"
 
 // Server Component - No "use client" directive
 export default function Home() {

@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse } from '@/lib/api-response'
-import { UpdateGroupRequest, GroupWithMembers } from '@/types/api'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
+import { UpdateGroupRequest, GroupWithMembers } from '@/shared/types/api/group'
 
 // GET /api/groups/[id] - Get single group
 export async function GET(
@@ -32,7 +32,9 @@ export async function GET(
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }
@@ -101,7 +103,9 @@ export async function PUT(
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }

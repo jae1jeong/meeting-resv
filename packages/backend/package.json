@@ -1,0 +1,16 @@
+{
+  "name": "@meeting-resv/backend",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "@meeting-resv/shared": "workspace:*",
+    "@prisma/client": "^5.14.0"
+  },
+  "exports": {
+    "./services": "./services/index.ts",
+    "./validations": "./validations/index.ts",
+    "./repositories": "./repositories/index.ts",
+    "./utils": "./utils/index.ts"
+  }
+}

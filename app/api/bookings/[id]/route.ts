@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse } from '@/lib/api-response'
-import { UpdateBookingRequest, BookingResponse } from '@/types/api'
-import { checkRoomAvailability, validateTimeSlot } from '@/lib/booking-utils'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
+import { UpdateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
+import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
 import { Prisma } from '@prisma/client'
-import { Booking } from '@/app/modules/booking/types'
 
 // GET /api/bookings/[id] - Get single booking
 export async function GET(
@@ -42,7 +41,9 @@ export async function GET(
           select: {
             id: true,
             email: true,
+            emailVerified: true,
             name: true,
+            image: true,
             createdAt: true,
             updatedAt: true
           }
@@ -53,7 +54,9 @@ export async function GET(
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }
@@ -195,7 +198,9 @@ export async function PUT(
           select: {
             id: true,
             email: true,
+            emailVerified: true,
             name: true,
+            image: true,
             createdAt: true,
             updatedAt: true
           }
@@ -206,7 +211,9 @@ export async function PUT(
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }

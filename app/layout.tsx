@@ -1,13 +1,14 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { AuthProvider } from "@/shared/providers/SessionProvider"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Lovy-tech | Smart Glasses OS",
-  description: "Advanced e-OS system for smart glasses with real-time performance tracking",
+  title: "GroupMeet | 그룹 기반 회의실 예약 시스템",
+  description: "조직을 위한 스마트한 회의실 관리와 예약 시스템",
 }
 
 export default function RootLayout({
@@ -16,8 +17,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="ko" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <AuthProvider session={null}>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   )
 }

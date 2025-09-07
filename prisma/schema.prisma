@@ -10,16 +10,39 @@ datasource db {
 
 model User {
   id              String          @id @default(cuid())
-  email           String          @unique
-  password        String
-  name            String
+  email           String?         @unique  // NextAuth allows null emails
+  emailVerified   DateTime?       // NextAuth requirement
+  password        String?         // Make optional for OAuth users
+  name            String?         // NextAuth allows null names
+  image           String?         // NextAuth profile image
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   
+  accounts        Account[]       // NextAuth requirement
   sessions        Session[]
   groupMemberships GroupMember[]
   bookings        Booking[]
   bookingParticipants BookingParticipant[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -35,15 +58,27 @@ model Session {
   @@index([expires])
 }
 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  
+  @@unique([identifier, token])
+}
+
 model Group {
   id          String        @id @default(cuid())
   name        String
   description String?
+  inviteCode  String?       @unique // 그룹 초대 코드 (6자리)
+  codeExpiresAt DateTime?   // 코드 만료 시간 (선택적)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   
   members     GroupMember[]
   rooms       MeetingRoom[]
+  
+  @@index([inviteCode])
 }
 
 model GroupMember {

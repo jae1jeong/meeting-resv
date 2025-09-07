@@ -1,0 +1,19 @@
+{
+  "name": "@meeting-resv/frontend",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "@meeting-resv/shared": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "exports": {
+    "./components": "./components/index.ts",
+    "./modules": "./modules/index.ts",
+    "./features": "./features/index.ts",
+    "./hooks": "./hooks/index.ts",
+    "./layouts": "./layouts/index.ts",
+    "./utils": "./utils/index.ts"
+  }
+}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { hashPassword } from '@/lib/auth'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { hashPassword } from '@/packages/backend/auth/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,18 +27,33 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hashPassword(password)
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true
-      }
+    // 트랜잭션으로 사용자와 Account 동시 생성
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          createdAt: true
+        }
+      })
+
+      // Credentials 제공자를 위한 Account 레코드 생성
+      await tx.account.create({
+        data: {
+          userId: newUser.id,
+          provider: 'credentials',
+          providerAccountId: newUser.id,
+          type: 'credentials'
+        }
+      })
+
+      return newUser
     })
 
     return NextResponse.json({

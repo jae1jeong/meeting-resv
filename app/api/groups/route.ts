@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse, paginatedResponse } from '@/lib/api-response'
-import { CreateGroupRequest, GroupWithMembers } from '@/types/api'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
+import { CreateGroupRequest, GroupWithMembers } from '@/shared/types/api/group'
+import { generateUniqueInviteCode } from '@/packages/backend/lib/group-utils'
 
 // GET /api/groups - List user's groups
 export async function GET(request: NextRequest) {
@@ -89,10 +90,17 @@ export async function POST(request: NextRequest) {
       return errorResponse('그룹 이름을 입력해주세요', 400)
     }
 
+    // 초대 코드 생성 (30일 유효)
+    const inviteCode = await generateUniqueInviteCode()
+    const codeExpiresAt = new Date()
+    codeExpiresAt.setDate(codeExpiresAt.getDate() + 30)
+
     const group = await prisma.group.create({
       data: {
         name,
         description,
+        inviteCode,
+        codeExpiresAt,
         members: {
           create: {
             userId: session.user.id,
@@ -107,7 +115,9 @@ export async function POST(request: NextRequest) {
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }

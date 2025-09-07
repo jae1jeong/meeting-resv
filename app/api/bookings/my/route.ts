@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { errorResponse, paginatedResponse } from '@/lib/api-response'
-import { BookingResponse } from '@/types/api'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
+import { BookingResponse } from '@/packages/shared/types/api/booking'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings/my - Get current user's bookings
@@ -54,7 +54,9 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             email: true,
+            emailVerified: true,
             name: true,
+            image: true,
             createdAt: true,
             updatedAt: true
           }
@@ -65,7 +67,9 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 email: true,
+                emailVerified: true,
                 name: true,
+                image: true,
                 createdAt: true,
                 updatedAt: true
               }
@@ -125,7 +129,9 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               email: true,
+              emailVerified: true,
               name: true,
+              image: true,
               createdAt: true,
               updatedAt: true
             }
@@ -136,7 +142,9 @@ export async function GET(request: NextRequest) {
                 select: {
                   id: true,
                   email: true,
+                  emailVerified: true,
                   name: true,
+                  image: true,
                   createdAt: true,
                   updatedAt: true
                 }

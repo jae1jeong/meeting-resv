@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../packages/frontend/components/**/*.{ts,tsx}";
+@source "../packages/frontend/**/*.{ts,tsx}";
+@source "../packages/shared/**/*.{ts,tsx}";
 
 :root {
   --background: 0 0% 100%;
@@ -96,13 +97,40 @@
 
   /* Glass morphism base styles */
   .glass {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    /* Fallback background */
+    background: rgba(255, 255, 255, 0.1) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%) !important;
+    
+    /* Backdrop filter with fallback */
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    
+    /* Better background for supported browsers */
+    @supports (backdrop-filter: blur(1px)) {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+    }
+    
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: 
-      0 8px 32px 0 rgba(31, 38, 135, 0.2),
-      inset 0 2px 0 0 rgba(255, 255, 255, 0.15);
+      0 8px 32px 0 rgba(31, 38, 135, 0.4),
+      inset 0 2px 0 0 rgba(255, 255, 255, 0.2),
+      0 4px 18px 0 rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .glass:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 100%) !important;
+    }
+    
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 
+      0 12px 40px 0 rgba(31, 38, 135, 0.5),
+      inset 0 2px 0 0 rgba(255, 255, 255, 0.25),
+      0 8px 25px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
   }
 
   .glass-dark {
@@ -126,35 +154,57 @@
   }
 
   .glass-button {
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 0.75rem;
-    padding: 0.5rem 1rem;
-    transition: all 0.3s ease;
+    /* Fallback */
+    background: rgba(255, 255, 255, 0.15) !important;
+    
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+    
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 
-      0 4px 15px 0 rgba(31, 38, 135, 0.15),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      0 4px 15px 0 rgba(31, 38, 135, 0.3),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+      0 2px 10px 0 rgba(255, 255, 255, 0.1) !important;
   }
 
   .glass-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.25) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    border-color: rgba(255, 255, 255, 0.4) !important;
     transform: translateY(-2px);
     box-shadow: 
-      0 8px 25px 0 rgba(31, 38, 135, 0.25),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+      0 8px 25px 0 rgba(31, 38, 135, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      0 4px 15px 0 rgba(255, 255, 255, 0.15) !important;
   }
 
   .glass-input {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 0.75rem;
-    padding: 0.5rem 1rem;
+    /* Fallback */
+    background: rgba(255, 255, 255, 0.12) !important;
+    
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      0 4px 15px 0 rgba(31, 38, 135, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+      0 2px 8px 0 rgba(255, 255, 255, 0.08) !important;
   }
 
   .glass-input::placeholder {
@@ -162,31 +212,61 @@
   }
 
   .glass-input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    outline: none !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+    
+    box-shadow: 
+      0 0 0 2px rgba(255, 255, 255, 0.4),
+      0 6px 20px 0 rgba(31, 38, 135, 0.3),
+      0 4px 15px 0 rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
   }
 
   /* Liquid glass effect */
   .liquid-glass {
     position: relative;
     overflow: hidden;
+    /* Fallback for browsers that don't support backdrop-filter */
+    background: rgba(255, 255, 255, 0.1) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%) !important;
+    
+    /* Modern browsers with backdrop-filter support */
+    backdrop-filter: blur(30px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+    
+    /* Ensure backdrop-filter is supported */
+    @supports (backdrop-filter: blur(1px)) {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+    }
+    
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+      0 8px 32px 0 rgba(31, 38, 135, 0.4),
+      inset 0 2px 0 0 rgba(255, 255, 255, 0.2),
+      0 4px 18px 0 rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    
+    /* Allow border-radius to be overridden */
+    border-radius: 0.75rem;
   }
 
-  .liquid-glass::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      45deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
-    animation: shimmer 3s linear infinite;
+  .liquid-glass:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+    
+    @supports (backdrop-filter: blur(1px)) {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 100%) !important;
+    }
+    
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 
+      0 12px 40px 0 rgba(31, 38, 135, 0.5),
+      inset 0 2px 0 0 rgba(255, 255, 255, 0.25),
+      0 8px 25px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
   }
 
   /* Glass glow effect */

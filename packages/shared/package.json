@@ -1,0 +1,12 @@
+{
+  "name": "@meeting-resv/shared",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    "./types": "./types/index.ts",
+    "./types/*": "./types/*.ts",
+    "./constants": "./constants/index.ts",
+    "./utils": "./utils/index.ts"
+  }
+}

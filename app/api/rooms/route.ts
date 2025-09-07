@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse, paginatedResponse } from '@/lib/api-response'
-import { CreateMeetingRoomRequest, MeetingRoomWithGroup } from '@/types/api'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
+import { CreateMeetingRoomRequest, MeetingRoomWithGroup } from '@/packages/shared/types/api/room'
 import { Prisma } from '@prisma/client'
 
 // GET /api/rooms - List rooms

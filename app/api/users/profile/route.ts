@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { successResponse, errorResponse } from '@/lib/api-response'
-import { UserResponse, UpdateProfileRequest } from '@/types/api'
-import { updateProfileSchema } from '@/lib/validations'
+import { prisma } from '@/packages/backend/lib/prisma'
+import { getSession } from '@/packages/backend/auth/auth'
+import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
+import { UserResponse } from '@/packages/shared/types/api/user'
+import { updateProfileSchema } from '@/packages/backend/validations'
 
 // GET /api/users/profile - Get current user profile
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getSession()
     if (!session?.user?.id) {
@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        emailVerified: true,
         name: true,
+        image: true,
         createdAt: true,
         updatedAt: true,
         groupMemberships: {
@@ -74,7 +76,9 @@ export async function PUT(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        emailVerified: true,
         name: true,
+        image: true,
         createdAt: true,
         updatedAt: true
       }
