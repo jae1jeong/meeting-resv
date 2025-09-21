@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/packages/backend/lib/prisma'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
 import { UserResponse } from '@/packages/shared/types/api/user'
 import { updateProfileSchema } from '@/packages/backend/validations'
@@ -21,6 +21,7 @@ export async function GET() {
         emailVerified: true,
         name: true,
         image: true,
+        isAdmin: true,
         createdAt: true,
         updatedAt: true,
         groupMemberships: {
@@ -79,6 +80,7 @@ export async function PUT(request: NextRequest) {
         emailVerified: true,
         name: true,
         image: true,
+        isAdmin: true,
         createdAt: true,
         updatedAt: true
       }

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { prisma } from '@/packages/backend/lib/prisma'
 import { regenerateInviteCode, disableInviteCode } from '@/packages/backend/lib/group-utils'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'

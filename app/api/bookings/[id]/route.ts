@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/packages/backend/lib/prisma'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
 import { UpdateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
 import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
+import { parseKSTDate } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings/[id] - Get single booking
@@ -119,7 +120,7 @@ export async function PUT(
 
     // Handle date/time changes
     if (date || startTime || endTime) {
-      const newDate = date ? new Date(date) : existingBooking.date
+      const newDate = date ? parseKSTDate(date) : new Date(existingBooking.date)
       const newStartTime = startTime || existingBooking.startTime
       const newEndTime = endTime || existingBooking.endTime
 
@@ -146,7 +147,6 @@ export async function PUT(
       }
 
       if (date) {
-        newDate.setHours(0, 0, 0, 0)
         updateData.date = newDate
       }
       if (startTime) updateData.startTime = startTime

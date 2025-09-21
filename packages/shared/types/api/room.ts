@@ -32,3 +32,18 @@ export interface MeetingRoomQueryParams {
   search?: string
   includeBookings?: boolean
 }
+
+// 페이지네이션된 회의실 목록 응답 타입
+export interface PaginatedRoomResponse {
+  items: MeetingRoomWithGroup[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+export type RoomListResponse = PaginatedRoomResponse

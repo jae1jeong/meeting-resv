@@ -1,6 +1,6 @@
 // Components
-export { WeekView } from './components/WeekView'
-export { CalendarEvent } from './components/CalendarEvent'
+export { WeekView } from './components/week-view'
+export { CalendarEvent } from './components/calendar-event'
 
 // Hooks
 export { useCalendar } from './hooks/useCalendar'

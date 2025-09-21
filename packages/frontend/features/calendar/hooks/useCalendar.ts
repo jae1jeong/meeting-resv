@@ -3,10 +3,13 @@
 import { useState, useCallback } from 'react'
 import { CalendarEvent, CalendarViewType } from '../types'
 
-export function useCalendar() {
+export function useCalendar(initialDate?: Date) {
   const [currentView, setCurrentView] = useState<CalendarViewType>('week')
-  const [currentMonth, setCurrentMonth] = useState('March 2025')
-  const [currentDate, setCurrentDate] = useState('March 5')
+  
+  // 초기 날짜 설정
+  const initDate = initialDate || new Date()
+  const [currentMonth, setCurrentMonth] = useState(initDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' }))
+  const [currentDate, setCurrentDate] = useState(initDate)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
 
   const handleEventClick = useCallback((event: CalendarEvent) => {
@@ -23,15 +26,32 @@ export function useCalendar() {
 
   const navigateToToday = useCallback(() => {
     const today = new Date()
-    setCurrentDate(today.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    }))
-    setCurrentMonth(today.toLocaleDateString('en-US', { 
-      month: 'long', 
-      year: 'numeric' 
+    setCurrentDate(today)
+    setCurrentMonth(today.toLocaleDateString('ko-KR', { 
+      year: 'numeric', 
+      month: 'long' 
     }))
   }, [])
+
+  const navigateToPreviousWeek = useCallback(() => {
+    const previousWeek = new Date(currentDate)
+    previousWeek.setDate(previousWeek.getDate() - 7)
+    setCurrentDate(previousWeek)
+    setCurrentMonth(previousWeek.toLocaleDateString('ko-KR', { 
+      year: 'numeric', 
+      month: 'long' 
+    }))
+  }, [currentDate])
+
+  const navigateToNextWeek = useCallback(() => {
+    const nextWeek = new Date(currentDate)
+    nextWeek.setDate(nextWeek.getDate() + 7)
+    setCurrentDate(nextWeek)
+    setCurrentMonth(nextWeek.toLocaleDateString('ko-KR', { 
+      year: 'numeric', 
+      month: 'long' 
+    }))
+  }, [currentDate])
 
   return {
     currentView,
@@ -42,6 +62,8 @@ export function useCalendar() {
     closeEventDetails,
     changeView,
     navigateToToday,
+    navigateToPreviousWeek,
+    navigateToNextWeek,
     setCurrentMonth,
     setCurrentDate,
   }

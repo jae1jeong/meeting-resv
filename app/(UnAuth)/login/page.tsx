@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
-import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { isAuthenticated } from '@/packages/backend/lib/auth-check'
 import { AppHeader } from '@/packages/frontend/components/layout/app-header'
 import { LoginForm } from '@/packages/frontend/components/auth/login-form'
 
@@ -12,10 +11,10 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   // 이미 로그인된 경우 메인 페이지로 리다이렉션
-  const session = await getServerSession(authOptions)
-  
-  if (session) {
-    redirect('/')
+  const authenticated = await isAuthenticated()
+
+  if (authenticated) {
+    redirect('/rooms')
   }
 
   return (

@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/packages/backend/lib/prisma'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
 import { BookingResponse } from '@/packages/shared/types/api/booking'
+import { parseKSTDate, setToKSTEndOfDay } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/groups/[id]/bookings - Get all bookings for a group's rooms
@@ -74,10 +75,10 @@ export async function GET(
     if (startDate || endDate) {
       where.date = {}
       if (startDate) {
-        where.date.gte = new Date(startDate)
+        where.date.gte = parseKSTDate(startDate)
       }
       if (endDate) {
-        where.date.lte = new Date(endDate)
+        where.date.lte = setToKSTEndOfDay(parseKSTDate(endDate))
       }
     }
 

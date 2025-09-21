@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from "react"
 import Image from "next/image"
-import { useAuth } from "@/shared/hooks/useAuth"
+import { useAuth } from "@/packages/frontend/contexts/auth-context"
 import { GlassCard } from "@/packages/frontend/components/ui/glass-card"
 
 interface ProtectedRouteProps {
@@ -10,13 +10,14 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, requireAuth } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      requireAuth()
+      // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+      window.location.href = '/login'
     }
-  }, [isLoading, isAuthenticated, requireAuth])
+  }, [isLoading, isAuthenticated])
 
   // 로딩 상태
   if (isLoading) {

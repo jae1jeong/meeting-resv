@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { validateInviteCode } from '@/packages/backend/lib/group-utils'
 import { prisma } from '@/packages/backend/lib/prisma'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'

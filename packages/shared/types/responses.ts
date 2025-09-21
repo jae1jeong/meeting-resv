@@ -79,33 +79,9 @@ export interface RoomResponse {
 
 export type RoomListResponse = PaginatedResponse<RoomResponse>
 
-// Booking responses
-export interface BookingResponse {
-  id: string
-  roomId: string
-  roomName: string
-  title: string
-  description?: string
-  startDateTime: string
-  endDateTime: string
-  createdBy: {
-    id: string
-    name: string
-    email: string
-  }
-  participants: Array<{
-    id: string
-    name: string
-    email: string
-    status: 'pending' | 'accepted' | 'declined'
-  }>
-  isRecurring: boolean
-  recurringPatternId?: string
-  createdAt: string
-  updatedAt: string
-}
-
-export type BookingListResponse = PaginatedResponse<BookingResponse>
+// Booking responses - import from API types
+import type { BookingResponse, BookingListResponse } from './api/booking'
+export type { BookingResponse, BookingListResponse }
 
 export interface BookingCreateResponse {
   booking: BookingResponse

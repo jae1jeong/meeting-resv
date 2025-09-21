@@ -2,7 +2,8 @@ import { Booking, BookingParticipant, RecurringPattern, RecurringException, Meet
 import { UserResponse } from './user'
 import { MeetingRoomWithGroup } from './room'
 
-export interface BookingResponse extends Booking {
+export interface BookingResponse extends Omit<Booking, 'date'> {
+  date: string // KST 날짜 문자열 ('YYYY-MM-DD')
   room: MeetingRoom
   creator: UserResponse
   participants?: BookingParticipantWithUser[]
@@ -71,3 +72,18 @@ export interface BookingQueryParams {
   includeParticipants?: boolean
   includeRecurring?: boolean
 }
+
+// 페이지네이션된 예약 목록 응답 타입
+export interface PaginatedBookingResponse {
+  items: BookingResponse[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+export type BookingListResponse = PaginatedBookingResponse

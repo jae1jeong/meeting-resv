@@ -20,11 +20,19 @@ export interface GroupMemberWithGroup extends GroupMember {
 export interface CreateGroupRequest {
   name: string
   description?: string
+  backgroundImage?: string
+  backgroundBlur?: number
+  backgroundOpacity?: number
+  backgroundPosition?: string
 }
 
 export interface UpdateGroupRequest {
   name?: string
   description?: string
+  backgroundImage?: string
+  backgroundBlur?: number
+  backgroundOpacity?: number
+  backgroundPosition?: string
 }
 
 export interface AddGroupMemberRequest {

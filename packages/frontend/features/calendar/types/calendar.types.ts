@@ -1,5 +1,7 @@
+import type { BookingResponse } from '@/packages/shared/types/responses'
+
 export interface CalendarEvent {
-  id: number
+  id: string
   title: string
   startTime: string
   endTime: string
@@ -9,6 +11,7 @@ export interface CalendarEvent {
   location: string
   attendees: string[]
   organizer: string
+  bookingData?: BookingResponse // 원본 예약 데이터 (API 연동 시 사용)
 }
 
 export interface Calendar {

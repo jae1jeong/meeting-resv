@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/packages/backend/lib/prisma'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
 import { CreateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
 import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
+import { parseKSTDate, setToKSTEndOfDay } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings - List bookings
@@ -51,10 +52,10 @@ export async function GET(request: NextRequest) {
     if (startDate || endDate) {
       where.date = {}
       if (startDate) {
-        where.date.gte = new Date(startDate)
+        where.date.gte = parseKSTDate(startDate)
       }
       if (endDate) {
-        where.date.lte = new Date(endDate)
+        where.date.lte = setToKSTEndOfDay(parseKSTDate(endDate))
       }
     }
 
@@ -161,8 +162,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse date
-    const bookingDate = new Date(date)
-    bookingDate.setHours(0, 0, 0, 0)
+    const bookingDate = parseKSTDate(date)
 
     // Check room availability
     const isAvailable = await checkRoomAvailability(roomId, bookingDate, startTime, endTime)

@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import { AuthProvider } from "@/shared/providers/SessionProvider"
+import { AuthProvider } from "@/packages/frontend/contexts/auth-context"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <AuthProvider session={null}>
+        <AuthProvider>
           {children}
         </AuthProvider>
       </body>

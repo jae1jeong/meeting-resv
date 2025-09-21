@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/packages/backend/lib/prisma'
-import { getSession } from '@/packages/backend/auth/auth'
+import { getSession } from '@/packages/backend/auth/better-auth'
 import { errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
 import { BookingResponse } from '@/packages/shared/types/api/booking'
+import { parseKSTDate, setToKSTEndOfDay } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings/my - Get current user's bookings
@@ -32,10 +33,10 @@ export async function GET(request: NextRequest) {
     if (startDate || endDate) {
       whereCreator.date = {}
       if (startDate) {
-        whereCreator.date.gte = new Date(startDate)
+        whereCreator.date.gte = parseKSTDate(startDate)
       }
       if (endDate) {
-        whereCreator.date.lte = new Date(endDate)
+        whereCreator.date.lte = setToKSTEndOfDay(parseKSTDate(endDate))
       }
     }
 
@@ -110,10 +111,10 @@ export async function GET(request: NextRequest) {
       if (startDate || endDate) {
         whereParticipant.date = {}
         if (startDate) {
-          whereParticipant.date.gte = new Date(startDate)
+          whereParticipant.date.gte = parseKSTDate(startDate)
         }
         if (endDate) {
-          whereParticipant.date.lte = new Date(endDate)
+          whereParticipant.date.lte = setToKSTEndOfDay(parseKSTDate(endDate))
         }
       }
 

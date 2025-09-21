@@ -3,182 +3,192 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("PRISMA_DATABASE_URL") // Prisma Accelerate URL
-  directUrl = env("DATABASE_URL") // Direct connection for migrations
+  provider  = "postgresql"
+  url       = env("PRISMA_DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 model User {
-  id              String          @id @default(cuid())
-  email           String?         @unique  // NextAuth allows null emails
-  emailVerified   DateTime?       // NextAuth requirement
-  password        String?         // Make optional for OAuth users
-  name            String?         // NextAuth allows null names
-  image           String?         // NextAuth profile image
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  
-  accounts        Account[]       // NextAuth requirement
-  sessions        Session[]
-  groupMemberships GroupMember[]
-  bookings        Booking[]
+  id                  String               @id @default(cuid())
+  email               String?              @unique
+  password            String?
+  name                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  emailVerified       Boolean              @default(false)
+  image               String?
+  isAdmin             Boolean              @default(false)
+  accounts            Account[]
+  bookings            Booking[]
   bookingParticipants BookingParticipant[]
+  groupMemberships    GroupMember[]
+  sessions            Session[]
+  refreshTokens       RefreshToken[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([provider, providerAccountId])
+  id                    String    @id @default(cuid())
+  userId                String
+  providerId            String
+  accountId             String
+  refreshToken          String?
+  accessToken           String?
+  accessTokenExpiresAt  DateTime?
+  idToken               String?
+  scope                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
   @@index([userId])
 }
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique
+  token        String   @unique
   userId       String
-  expires      DateTime
+  expiresAt    DateTime
   createdAt    DateTime @default(now())
-  
+  updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
-  @@index([expires])
+  @@index([expiresAt])
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
-  
+
   @@unique([identifier, token])
 }
 
 model Group {
-  id          String        @id @default(cuid())
-  name        String
-  description String?
-  inviteCode  String?       @unique // 그룹 초대 코드 (6자리)
-  codeExpiresAt DateTime?   // 코드 만료 시간 (선택적)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
-  members     GroupMember[]
-  rooms       MeetingRoom[]
-  
+  id                 String        @id @default(cuid())
+  name               String
+  description        String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  codeExpiresAt      DateTime?
+  inviteCode         String?       @unique
+  backgroundBlur     Int           @default(10)
+  backgroundImage    String?
+  backgroundOpacity  Float         @default(0.5)
+  backgroundPosition String        @default("center")
+  members            GroupMember[]
+  rooms              MeetingRoom[]
+
   @@index([inviteCode])
 }
 
 model GroupMember {
-  id        String   @id @default(cuid())
-  userId    String
-  groupId   String
-  role      Role     @default(MEMBER)
-  joinedAt  DateTime @default(now())
-  
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  
+  id       String   @id @default(cuid())
+  userId   String
+  groupId  String
+  role     Role     @default(MEMBER)
+  joinedAt DateTime @default(now())
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, groupId])
   @@index([userId])
   @@index([groupId])
 }
 
 model MeetingRoom {
-  id          String      @id @default(cuid())
-  name        String
-  capacity    Int
-  location    String?
-  amenities   String[]    @default([])
-  groupId     String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  
-  group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  bookings    Booking[]
-  
+  id        String    @id @default(cuid())
+  name      String
+  capacity  Int
+  location  String?
+  amenities String[]  @default([])
+  groupId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
   @@index([groupId])
 }
 
 model Booking {
-  id              String      @id @default(cuid())
-  title           String
-  description     String?
-  roomId          String
-  creatorId       String
-  date            DateTime    @db.Date
-  startTime       String      // HH:mm format (e.g., "09:00", "09:30")
-  endTime         String      // HH:mm format (e.g., "10:00", "10:30")
-  isRecurring     Boolean     @default(false)
-  recurringId     String?     // Links recurring bookings together
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  room            MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  creator         User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  participants    BookingParticipant[]
+  id               String               @id @default(cuid())
+  title            String
+  description      String?
+  roomId           String
+  creatorId        String
+  date             DateTime             @db.Date
+  startTime        String
+  endTime          String
+  isRecurring      Boolean              @default(false)
+  recurringId      String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  color            String               @default("bg-blue-500")
+  creator          User                 @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  room             MeetingRoom          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participants     BookingParticipant[]
   recurringPattern RecurringPattern?
-  
+
+  @@unique([roomId, date, startTime, endTime])
   @@index([roomId])
   @@index([creatorId])
   @@index([date])
   @@index([recurringId])
-  @@unique([roomId, date, startTime, endTime])
 }
 
 model BookingParticipant {
-  id          String   @id @default(cuid())
-  bookingId   String
-  userId      String
-  addedAt     DateTime @default(now())
-  
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  bookingId String
+  userId    String
+  addedAt   DateTime @default(now())
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([bookingId, userId])
   @@index([bookingId])
   @@index([userId])
 }
 
 model RecurringPattern {
-  id              String              @id @default(cuid())
-  bookingId       String              @unique
-  type            RecurringType
-  interval        Int                 @default(1) // Every N weeks/months
-  daysOfWeek      Int[]              @default([]) // 0=Sunday, 6=Saturday
-  dayOfMonth      Int?               // For monthly recurring (1-31)
-  endDate         DateTime?          @db.Date
-  occurrences     Int?               // Number of occurrences
-  
-  booking         Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  exceptions      RecurringException[]
+  id          String               @id @default(cuid())
+  bookingId   String               @unique
+  type        RecurringType
+  interval    Int                  @default(1)
+  daysOfWeek  Int[]                @default([])
+  dayOfMonth  Int?
+  endDate     DateTime?            @db.Date
+  occurrences Int?
+  exceptions  RecurringException[]
+  booking     Booking              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
 
 model RecurringException {
-  id              String          @id @default(cuid())
-  patternId       String
-  date            DateTime        @db.Date
-  type            ExceptionType   // SKIP or MODIFY
-  newStartTime    String?         // For MODIFY type
-  newEndTime      String?         // For MODIFY type
-  reason          String?
-  
-  pattern         RecurringPattern @relation(fields: [patternId], references: [id], onDelete: Cascade)
-  
+  id           String           @id @default(cuid())
+  patternId    String
+  date         DateTime         @db.Date
+  type         ExceptionType
+  newStartTime String?
+  newEndTime   String?
+  reason       String?
+  pattern      RecurringPattern @relation(fields: [patternId], references: [id], onDelete: Cascade)
+
   @@index([patternId])
   @@index([date])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
 }
 
 enum Role {
