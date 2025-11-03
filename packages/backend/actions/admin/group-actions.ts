@@ -71,7 +71,7 @@ export async function createGroup(data: {
       backgroundPosition: data.backgroundPosition ?? 'center',
       members: {
         create: {
-          userId: session.user.id,
+          userId: session.id,
           role: 'ADMIN'
         }
       }

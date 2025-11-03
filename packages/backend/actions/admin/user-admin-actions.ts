@@ -39,7 +39,7 @@ export async function toggleAdminStatus(userId: string) {
   const session = await requireAdmin()
 
   // 자기 자신의 권한은 변경할 수 없음
-  if (session.user.id === userId) {
+  if (session.id === userId) {
     throw new Error('자신의 권한은 변경할 수 없습니다')
   }
 
@@ -89,7 +89,7 @@ export async function removeAdminStatus(userId: string) {
   const session = await requireAdmin()
 
   // 자기 자신의 권한은 제거할 수 없음
-  if (session.user.id === userId) {
+  if (session.id === userId) {
     throw new Error('자신의 권한은 제거할 수 없습니다')
   }
 

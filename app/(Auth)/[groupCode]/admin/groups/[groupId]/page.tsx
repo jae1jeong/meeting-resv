@@ -4,26 +4,29 @@ import { getGroupDetail, getGroupMembers } from '@/packages/backend/actions/admi
 import GroupDetailClient from './group-detail-client'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     groupId: string
-  }
+  }>
 }
 
 export default async function GroupDetailPage({ params }: PageProps) {
   // 어드민 권한 체크
   await requireAdmin()
 
+  // Next.js 15에서 params는 Promise
+  const { groupId } = await params
+
   // 서버에서 데이터 패칭 (병렬 처리)
   const [group, members] = await Promise.all([
-    getGroupDetail(params.groupId),
-    getGroupMembers(params.groupId)
+    getGroupDetail(groupId),
+    getGroupMembers(groupId)
   ])
 
   return (
     <GroupDetailClient
       group={group}
       members={members}
-      groupId={params.groupId}
+      groupId={groupId}
     />
   )
 }

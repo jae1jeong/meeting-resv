@@ -14,10 +14,10 @@ interface ProtectedRouteProps {
  * 미인증 사용자는 자동으로 로그인 페이지로 리다이렉션됩니다.
  */
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
-  const { user, isPending } = useAuth()
+  const { session, isPending } = useAuth()
   const router = useRouter()
 
-  const isAuthenticated = !!user
+  const isAuthenticated = !!session?.user
 
   useEffect(() => {
     if (!isPending && !isAuthenticated) {

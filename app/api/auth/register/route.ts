@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
       const newUser = await tx.user.create({
         data: {
           email,
-          password: hashedPassword,
           name
         },
         select: {
@@ -68,13 +67,13 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Credentials 제공자를 위한 Account 레코드 생성
+      // Credentials 제공자를 위한 Account 레코드 생성 (비밀번호 포함)
       await tx.account.create({
         data: {
           userId: newUser.id,
-          provider: 'credentials',
-          providerAccountId: newUser.id,
-          type: 'credentials'
+          providerId: 'credential',
+          accountId: newUser.id,
+          password: hashedPassword
         }
       })
 

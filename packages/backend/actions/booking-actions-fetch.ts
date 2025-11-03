@@ -83,7 +83,12 @@ export async function getRoomBookingsAction(
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            emailVerified: true,
+            image: true,
+            isAdmin: true,
+            createdAt: true,
+            updatedAt: true
           }
         },
         participants: {
@@ -92,7 +97,12 @@ export async function getRoomBookingsAction(
               select: {
                 id: true,
                 name: true,
-                email: true
+                email: true,
+                emailVerified: true,
+                image: true,
+                isAdmin: true,
+                createdAt: true,
+                updatedAt: true
               }
             }
           }
@@ -121,24 +131,26 @@ export async function getRoomBookingsAction(
         id: booking.creator.id,
         name: booking.creator.name || '',
         email: booking.creator.email || '',
-        emailVerified: null,
-        image: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        emailVerified: booking.creator.emailVerified ?? false,
+        image: booking.creator.image,
+        isAdmin: booking.creator.isAdmin,
+        createdAt: booking.creator.createdAt,
+        updatedAt: booking.creator.updatedAt
       },
       participants: booking.participants.map(p => ({
         id: p.id,
         bookingId: p.bookingId,
         userId: p.userId,
-        addedAt: new Date(),
+        addedAt: p.addedAt,
         user: {
           id: p.user.id,
           name: p.user.name || '',
           email: p.user.email || '',
-          emailVerified: null,
-          image: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          emailVerified: p.user.emailVerified ?? false,
+          image: p.user.image,
+          isAdmin: p.user.isAdmin,
+          createdAt: p.user.createdAt,
+          updatedAt: p.user.updatedAt
         }
       })),
       createdAt: booking.createdAt,
@@ -216,7 +228,12 @@ export async function getBookingsForDateRangeAction(
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            emailVerified: true,
+            image: true,
+            isAdmin: true,
+            createdAt: true,
+            updatedAt: true
           }
         },
         participants: {
@@ -225,7 +242,12 @@ export async function getBookingsForDateRangeAction(
               select: {
                 id: true,
                 name: true,
-                email: true
+                email: true,
+                emailVerified: true,
+                image: true,
+                isAdmin: true,
+                createdAt: true,
+                updatedAt: true
               }
             }
           }
@@ -254,24 +276,26 @@ export async function getBookingsForDateRangeAction(
         id: booking.creator.id,
         name: booking.creator.name || '',
         email: booking.creator.email || '',
-        emailVerified: null,
-        image: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        emailVerified: booking.creator.emailVerified ?? false,
+        image: booking.creator.image,
+        isAdmin: booking.creator.isAdmin,
+        createdAt: booking.creator.createdAt,
+        updatedAt: booking.creator.updatedAt
       },
       participants: booking.participants.map(p => ({
         id: p.id,
         bookingId: p.bookingId,
         userId: p.userId,
-        addedAt: new Date(),
+        addedAt: p.addedAt,
         user: {
           id: p.user.id,
           name: p.user.name || '',
           email: p.user.email || '',
-          emailVerified: null,
-          image: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          emailVerified: p.user.emailVerified ?? false,
+          image: p.user.image,
+          isAdmin: p.user.isAdmin,
+          createdAt: p.user.createdAt,
+          updatedAt: p.user.updatedAt
         }
       })),
       createdAt: booking.createdAt,

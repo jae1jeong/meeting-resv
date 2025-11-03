@@ -57,7 +57,8 @@ export async function GET(
               name: true,
               image: true,
               createdAt: true,
-              updatedAt: true
+              updatedAt: true,
+              isAdmin: true
             }
           }
         },
@@ -153,7 +154,8 @@ export async function POST(
             name: true,
             image: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            isAdmin: true
           }
         }
       }

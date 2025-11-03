@@ -33,8 +33,7 @@ export const auth = betterAuth({
     expiresIn: 30 * 24 * 60 * 60, // 30일
     updateAge: 24 * 60 * 60, // 24시간마다 세션 갱신
     cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60 // 5분
+      enabled: false // 쿠키 캐시 비활성화 - 항상 DB 확인
     }
   },
 

@@ -24,32 +24,35 @@ export async function middleware(request: NextRequest) {
   }
 
   // Better Auth 세션 쿠키 확인 (간단한 쿠키 존재 여부만 체크)
-  const sessionCookie = request.cookies.get('better-auth.session_token')
+  // 모든 쿠키 출력 (디버깅)
+  console.log('All cookies:', request.cookies.getAll())
+  const sessionCookie = request.cookies.get('better-auth.session_token') ||
+                        request.cookies.get('better-auth.session') ||
+                        request.cookies.get('auth.session_token')
 
-  // 인증이 필요한 경로 처리
-  const protectedPaths = [
-    '/dashboard',
-    '/groups',
-    '/rooms',
-    '/bookings',
-    '/api/groups',
-    '/api/rooms',
-    '/api/bookings',
-    '/api/users'
-  ]
+  // groupCode 없이 보호된 경로에 직접 접근하는 경우 체크
+  // 예: /rooms, /bookings, /admin (groupCode 없이)
+  const directProtectedPaths = ['/rooms', '/bookings', '/admin']
+  const isDirectProtectedPath = directProtectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))
 
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
-
-  if (isProtectedPath && !sessionCookie) {
-    // API 요청인 경우 401 반환
-    if (pathname.startsWith('/api')) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다' },
-        { status: 401 }
-      )
+  if (isDirectProtectedPath) {
+    // 인증되지 않은 경우 로그인으로
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL('/login', request.url))
     }
-    // 페이지 요청인 경우 로그인 페이지로 리다이렉트
-    return NextResponse.redirect(new URL('/login', request.url))
+    // 인증된 경우 - 홈으로 리다이렉트 (홈에서 첫 그룹으로 리다이렉트)
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // API 경로 보호
+  const protectedApiPaths = ['/api/groups', '/api/rooms', '/api/bookings', '/api/users']
+  const isProtectedApiPath = protectedApiPaths.some(path => pathname.startsWith(path))
+
+  if (isProtectedApiPath && !sessionCookie) {
+    return NextResponse.json(
+      { error: '인증이 필요합니다' },
+      { status: 401 }
+    )
   }
 
   return NextResponse.next()

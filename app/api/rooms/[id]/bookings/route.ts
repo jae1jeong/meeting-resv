@@ -3,7 +3,7 @@ import { prisma } from '@/packages/backend/lib/prisma'
 import { getSession } from '@/packages/backend/auth/better-auth'
 import { errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
 import { BookingResponse } from '@/packages/shared/types/api/booking'
-import { parseKSTDate, setToKSTEndOfDay } from '@/packages/shared/utils/date-utils'
+import { parseKSTDate, setToKSTEndOfDay, toKSTDateString } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/rooms/[id]/bookings - Get bookings for a specific room
@@ -80,7 +80,8 @@ export async function GET(
               name: true,
               image: true,
               createdAt: true,
-              updatedAt: true
+              updatedAt: true,
+              isAdmin: true
             }
           },
           participants: {
@@ -93,7 +94,8 @@ export async function GET(
                   name: true,
                   image: true,
                   createdAt: true,
-                  updatedAt: true
+                  updatedAt: true,
+                  isAdmin: true
                 }
               }
             }
@@ -112,9 +114,12 @@ export async function GET(
       prisma.booking.count({ where })
     ])
 
-    // Add room details to response
+    // Add room details to response and convert date to string
     const bookingsWithRoomDetails = bookings.map((booking) => ({
       ...booking,
+      date: toKSTDateString(booking.date),
+      creator: booking.creator,
+      participants: booking.participants || [],
       room: {
         ...booking.room,
         group: room.group

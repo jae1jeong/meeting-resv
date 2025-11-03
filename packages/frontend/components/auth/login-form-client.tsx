@@ -1,34 +1,67 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { GlassInput } from '@/packages/frontend/components/ui/glass-input'
 import { LoginSubmitButton } from './login-submit-button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/packages/shared/utils/utils'
-import { signInAction } from '@/packages/backend/actions/auth-actions'
+import { authClient } from '@/packages/frontend/lib/auth-client'
 
-interface LoginFormProps {
+interface LoginFormClientProps {
   className?: string
-  error?: string
+  initialError?: string
 }
 
-async function handleSignIn(formData: FormData) {
-  'use server'
+export function LoginFormClient({ className = '', initialError }: LoginFormClientProps) {
+  const router = useRouter()
+  const [error, setError] = useState(initialError)
+  const [isLoading, setIsLoading] = useState(false)
 
-  try {
-    await signInAction(formData)
-  } catch (error: unknown) {
-    // 에러 발생 시 에러 메시지와 함께 리다이렉트
-    const errorMessage = error instanceof Error
-      ? error.message
-      : '로그인에 실패했습니다'
-    redirect(`/login?error=${encodeURIComponent(errorMessage)}`)
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(undefined)
+    setIsLoading(true)
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    try {
+      // Better Auth 클라이언트 사용
+      const { data, error: signInError } = await authClient.signIn.email({
+        email: email.toLowerCase().trim(),
+        password,
+      })
+
+      if (signInError) {
+        throw new Error(signInError.message || '로그인에 실패했습니다')
+      }
+
+      // 로그인 성공 - 사용자의 첫 번째 그룹으로 리다이렉트
+      // 서버에서 그룹 목록 가져오기
+      const groupsResponse = await fetch('/api/users/me/groups')
+      if (groupsResponse.ok) {
+        const groups = await groupsResponse.json()
+        if (groups.length > 0 && groups[0].slug) {
+          router.push(`/${groups[0].slug}/rooms`)
+        } else {
+          // 그룹이 없는 경우
+          router.push('/groups/join')
+        }
+      } else {
+        // 그룹 정보를 가져오지 못한 경우 기본 경로로
+        router.push('/rooms')
+      }
+      router.refresh()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다'
+      setError(errorMessage)
+      setIsLoading(false)
+    }
   }
 
-  // 로그인 성공 시 리다이렉트 (try 밖에서)
-  redirect('/rooms')
-}
-
-export function LoginForm({ className = '', error }: LoginFormProps) {
   return (
     <div className={cn("w-full p-10 shadow-2xl liquid-glass rounded-3xl text-white", className)}>
       <div className="text-center mb-10">
@@ -36,7 +69,7 @@ export function LoginForm({ className = '', error }: LoginFormProps) {
         <p className="mt-3 text-lg text-white/60">다시 오신 것을 환영합니다!</p>
       </div>
 
-      <form action={handleSignIn} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm backdrop-blur-sm">
             <div className="flex items-center space-x-2">
@@ -62,8 +95,7 @@ export function LoginForm({ className = '', error }: LoginFormProps) {
               placeholder="이메일"
               radius="xl"
               inputSize="sm"
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-              title="올바른 이메일 형식을 입력해주세요"
+              disabled={isLoading}
             />
           </div>
 
@@ -81,7 +113,7 @@ export function LoginForm({ className = '', error }: LoginFormProps) {
               radius="xl"
               inputSize="sm"
               minLength={8}
-              title="비밀번호는 8자 이상이어야 합니다"
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -91,6 +123,7 @@ export function LoginForm({ className = '', error }: LoginFormProps) {
             <Checkbox
               id="remember-me"
               name="remember-me"
+              disabled={isLoading}
               className="w-5 h-5 border-white/30 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
             />
             <label
@@ -109,7 +142,7 @@ export function LoginForm({ className = '', error }: LoginFormProps) {
         </div>
 
         <div>
-          <LoginSubmitButton />
+          <LoginSubmitButton disabled={isLoading} />
         </div>
       </form>
 

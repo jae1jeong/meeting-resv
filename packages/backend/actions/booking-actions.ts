@@ -139,7 +139,12 @@ export async function createBookingAction(data: CreateBookingRequest): Promise<{
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            emailVerified: true,
+            image: true,
+            isAdmin: true,
+            createdAt: true,
+            updatedAt: true
           }
         },
         participants: {
@@ -148,7 +153,12 @@ export async function createBookingAction(data: CreateBookingRequest): Promise<{
               select: {
                 id: true,
                 name: true,
-                email: true
+                email: true,
+                emailVerified: true,
+                image: true,
+                isAdmin: true,
+                createdAt: true,
+                updatedAt: true
               }
             }
           }
@@ -185,7 +195,7 @@ export async function createBookingAction(data: CreateBookingRequest): Promise<{
           id: booking.creator.id,
           name: booking.creator.name || '',
           email: booking.creator.email || '',
-          emailVerified: booking.creator.emailVerified,
+          emailVerified: booking.creator.emailVerified ?? false,
           image: booking.creator.image,
           isAdmin: booking.creator.isAdmin,
           createdAt: booking.creator.createdAt,
@@ -200,7 +210,7 @@ export async function createBookingAction(data: CreateBookingRequest): Promise<{
             id: p.user.id,
             name: p.user.name || '',
             email: p.user.email || '',
-            emailVerified: p.user.emailVerified,
+            emailVerified: p.user.emailVerified ?? false,
             image: p.user.image,
             isAdmin: p.user.isAdmin,
             createdAt: p.user.createdAt,
@@ -371,7 +381,12 @@ export async function updateBookingAction(
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            emailVerified: true,
+            image: true,
+            isAdmin: true,
+            createdAt: true,
+            updatedAt: true
           }
         },
         participants: {
@@ -380,7 +395,12 @@ export async function updateBookingAction(
               select: {
                 id: true,
                 name: true,
-                email: true
+                email: true,
+                emailVerified: true,
+                image: true,
+                isAdmin: true,
+                createdAt: true,
+                updatedAt: true
               }
             }
           }
@@ -411,7 +431,7 @@ export async function updateBookingAction(
           id: updatedBooking.creator.id,
           name: updatedBooking.creator.name || '',
           email: updatedBooking.creator.email || '',
-          emailVerified: updatedBooking.creator.emailVerified,
+          emailVerified: updatedBooking.creator.emailVerified ?? false,
           image: updatedBooking.creator.image,
           isAdmin: updatedBooking.creator.isAdmin,
           createdAt: updatedBooking.creator.createdAt,
@@ -426,7 +446,7 @@ export async function updateBookingAction(
             id: p.user.id,
             name: p.user.name || '',
             email: p.user.email || '',
-            emailVerified: p.user.emailVerified,
+            emailVerified: p.user.emailVerified ?? false,
             image: p.user.image,
             isAdmin: p.user.isAdmin,
             createdAt: p.user.createdAt,

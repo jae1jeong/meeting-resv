@@ -4,6 +4,18 @@ import { auth } from '@/packages/backend/auth/better-auth'
 import { headers } from 'next/headers'
 import { prisma } from '@/packages/backend/lib/prisma'
 
+// Better Auth 사용자 타입 확장
+interface ExtendedUser {
+  id: string
+  email: string | null
+  name: string | null
+  image?: string | null
+  isAdmin?: boolean
+  emailVerified?: boolean
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 interface AuthResult {
   success: boolean
   user?: {
@@ -132,12 +144,12 @@ export async function refreshTokenAction(): Promise<{ success: boolean; accessTo
     // 여기서는 현재 세션 정보만 반환
     return {
       success: true,
-      accessToken: session.session.token,
+      accessToken: session.session.id, // Better Auth 세션 ID 사용
       user: {
         id: session.user.id,
         email: session.user.email || '',
         name: session.user.name || '',
-        isAdmin: session.user.isAdmin || false
+        isAdmin: (session.user as ExtendedUser).isAdmin || false
       }
     }
   } catch (error) {
@@ -149,4 +161,49 @@ export async function refreshTokenAction(): Promise<{ success: boolean; accessTo
   }
 }
 
-// 기존 loginAction은 제거 - Better Auth 클라이언트의 signIn 메서드 사용
+/**
+ * 로그인 서버 액션
+ * Better Auth의 서버사이드 로그인 처리
+ */
+export async function signInAction(formData: FormData): Promise<void> {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  // 유효성 검사
+  if (!email || !password) {
+    throw new Error('이메일과 비밀번호를 입력해주세요')
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    throw new Error('올바른 이메일 형식이 아닙니다')
+  }
+
+  if (password.length < 8) {
+    throw new Error('비밀번호는 8자 이상이어야 합니다')
+  }
+
+  try {
+    const headersList = await headers()
+
+    // Better Auth 서버사이드 로그인
+    const response = await auth.api.signInEmail({
+      body: {
+        email: email.toLowerCase().trim(),
+        password
+      },
+      headers: headersList
+    })
+
+    // Better Auth 1.3.13 응답 구조: { user, token, redirect, url }
+    if (!response.user) {
+      throw new Error('이메일 또는 비밀번호가 잘못되었습니다')
+    }
+
+    // 세션 쿠키는 Better Auth가 자동으로 설정
+    // 성공 시 리다이렉트는 폼 컴포넌트에서 처리
+  } catch (error: any) {
+    console.error('로그인 오류:', error)
+    throw new Error(error.message || '로그인에 실패했습니다')
+  }
+}

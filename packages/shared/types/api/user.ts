@@ -1,7 +1,9 @@
 import { User } from '@prisma/client'
 import { GroupMemberWithGroup } from './group'
 
-export type UserResponse = Omit<User, 'password'>
+export type UserResponse = Omit<User, 'password'> & {
+  isAdmin: boolean
+}
 
 export interface UserWithGroups extends UserResponse {
   groupMemberships: GroupMemberWithGroup[]

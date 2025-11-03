@@ -35,13 +35,13 @@ export default function EventDetails({
   onClose,
   onEventUpdated,
 }: EventDetailsProps) {
-  const { user } = useAuth()
+  const { session } = useAuth()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
 
   // 현재 사용자가 예약 생성자인지 확인
   const isOwner =
-    event.bookingData && user?.id === event.bookingData.creator.id
+    event.bookingData && session?.user?.id === event.bookingData.creator.id
 
   const handleDelete = async () => {
     if (!event.bookingData) return

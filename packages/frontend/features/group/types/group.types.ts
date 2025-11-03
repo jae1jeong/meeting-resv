@@ -1,7 +1,7 @@
 export interface Group {
   id: string
   name: string
-  description?: string
+  description: string | null
   members: GroupMember[]
   rooms: Room[]
   createdAt: Date

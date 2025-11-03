@@ -267,7 +267,7 @@ export function BookingsClient({ initialBookings, userId }: BookingsClientProps)
             <div className="md:w-48">
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'upcoming' | 'past')}
                 className={cn(
                   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20",
                   "text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50",

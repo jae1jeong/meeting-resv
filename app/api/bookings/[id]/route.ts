@@ -4,7 +4,7 @@ import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
 import { UpdateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
 import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
-import { parseKSTDate } from '@/packages/shared/utils/date-utils'
+import { parseKSTDate, toKSTDateString } from '@/packages/shared/utils/date-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings/[id] - Get single booking
@@ -46,7 +46,8 @@ export async function GET(
             name: true,
             image: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            isAdmin: true
           }
         },
         participants: {
@@ -76,7 +77,13 @@ export async function GET(
       return errorResponse('Booking not found', 404)
     }
 
-    return successResponse<BookingResponse>(booking)
+    // Convert date to string for response
+    const bookingResponse = {
+      ...booking,
+      date: toKSTDateString(booking.date)
+    }
+
+    return successResponse<BookingResponse>(bookingResponse)
   } catch (error) {
     console.error('Error fetching booking:', error)
     return errorResponse('Failed to fetch booking', 500)
@@ -202,7 +209,8 @@ export async function PUT(
             name: true,
             image: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            isAdmin: true
           }
         },
         participants: {
@@ -223,7 +231,13 @@ export async function PUT(
       }
     })
 
-    return successResponse<BookingResponse>(booking, 'Booking updated successfully')
+    // Convert date to string for response
+    const bookingResponse = {
+      ...booking,
+      date: toKSTDateString(booking.date)
+    }
+
+    return successResponse<BookingResponse>(bookingResponse, 'Booking updated successfully')
   } catch (error) {
     console.error('Error updating booking:', error)
     return errorResponse('Failed to update booking', 500)

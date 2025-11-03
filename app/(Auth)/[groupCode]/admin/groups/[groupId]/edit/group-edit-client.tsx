@@ -75,8 +75,8 @@ export default function GroupEditClient({ group }: GroupEditClientProps) {
     try {
       await updateGroup(group.id, {
         name: formData.name,
-        description: formData.description || null,
-        backgroundImage: formData.backgroundImage || null,
+        description: formData.description || undefined,
+        backgroundImage: formData.backgroundImage || undefined,
         backgroundBlur: formData.backgroundBlur,
         backgroundOpacity: formData.backgroundOpacity,
         backgroundPosition: formData.backgroundPosition

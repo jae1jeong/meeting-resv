@@ -68,7 +68,8 @@ export async function PUT(
             name: true,
             image: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            isAdmin: true
           }
         }
       }

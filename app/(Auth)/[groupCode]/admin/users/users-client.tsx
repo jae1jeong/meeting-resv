@@ -52,8 +52,8 @@ export default function AdminUsersClient({ initialUsers }: AdminUsersClientProps
       )
 
       router.refresh()
-    } catch (error: any) {
-      alert(error.message || '권한 변경에 실패했습니다')
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : '권한 변경에 실패했습니다')
     } finally {
       setIsLoading(null)
     }

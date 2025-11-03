@@ -1,6 +1,5 @@
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { verifyAccessToken } from './jwt-utils'
+import { getCurrentUser as getBetterAuthUser } from '@/packages/backend/auth/better-auth'
 import { prisma } from './prisma'
 
 interface AuthUser {
@@ -11,26 +10,25 @@ interface AuthUser {
 }
 
 /**
- * JWT 토큰에서 사용자 정보 가져오기 (서버 컴포넌트용)
+ * Better Auth 세션에서 사용자 정보 가져오기 (서버 컴포넌트용)
  */
-async function getUserFromToken(): Promise<AuthUser | null> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('accessToken')?.value
+async function getUserFromSession(): Promise<AuthUser | null> {
+  try {
+    const user = await getBetterAuthUser()
 
-  if (!token) {
+    if (!user || !user.email || !user.name) {
+      return null
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isAdmin: user.isAdmin
+    }
+  } catch (error) {
+    console.error('세션에서 사용자 정보 가져오기 실패:', error)
     return null
-  }
-
-  const payload = verifyAccessToken(token)
-  if (!payload) {
-    return null
-  }
-
-  return {
-    id: payload.userId,
-    email: payload.email,
-    name: payload.name,
-    isAdmin: payload.isAdmin
   }
 }
 
@@ -39,7 +37,7 @@ async function getUserFromToken(): Promise<AuthUser | null> {
  * 권한이 없으면 홈으로 리다이렉트
  */
 export async function requireAdmin() {
-  const user = await getUserFromToken()
+  const user = await getUserFromSession()
 
   if (!user) {
     redirect('/login')
@@ -63,7 +61,7 @@ export async function requireAdmin() {
  * 로그인하지 않았으면 로그인 페이지로 리다이렉트
  */
 export async function requireAuth() {
-  const user = await getUserFromToken()
+  const user = await getUserFromSession()
 
   if (!user) {
     redirect('/login')
@@ -76,7 +74,7 @@ export async function requireAuth() {
  * 어드민 권한 확인 (boolean 반환)
  */
 export async function isAdmin() {
-  const user = await getUserFromToken()
+  const user = await getUserFromSession()
 
   if (!user) {
     return false
@@ -95,13 +93,13 @@ export async function isAdmin() {
  * 현재 사용자 정보 가져오기
  */
 export async function getCurrentUser() {
-  return await getUserFromToken()
+  return await getUserFromSession()
 }
 
 /**
  * 로그인 여부 확인
  */
 export async function isAuthenticated() {
-  const user = await getUserFromToken()
+  const user = await getUserFromSession()
   return !!user
 }
