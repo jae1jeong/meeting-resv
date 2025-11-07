@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/packages/backend/lib/prisma'
 import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse } from '@/packages/backend/utils/api-response'
@@ -237,6 +238,16 @@ export async function PUT(
       date: toKSTDateString(booking.date)
     }
 
+    // 태그 기반 재검증
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: { roomId: true }
+    })
+    if (existingBooking) {
+      revalidateTag(`room-${existingBooking.roomId}`)
+      revalidateTag(`bookings-${existingBooking.roomId}`)
+    }
+
     return successResponse<BookingResponse>(bookingResponse, 'Booking updated successfully')
   } catch (error) {
     console.error('Error updating booking:', error)
@@ -258,7 +269,8 @@ export async function DELETE(
 
     // Check if user is the creator
     const booking = await prisma.booking.findUnique({
-      where: { id }
+      where: { id },
+      include: { room: true }
     })
 
     if (!booking) {
@@ -272,6 +284,10 @@ export async function DELETE(
     await prisma.booking.delete({
       where: { id }
     })
+
+    // 태그 기반 재검증
+    revalidateTag(`room-${booking.roomId}`)
+    revalidateTag(`bookings-${booking.roomId}`)
 
     return successResponse(null, 'Booking deleted successfully')
   } catch (error) {

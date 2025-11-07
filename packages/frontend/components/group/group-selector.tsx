@@ -55,8 +55,8 @@ export function GroupSelector({ className }: GroupSelectorProps) {
               <button
                 key={group.id}
                 onClick={() => {
-                  if (group.slug !== currentGroup.slug) {
-                    switchGroup(group.slug)
+                  if (group.inviteCode !== currentGroup.inviteCode) {
+                    switchGroup(group.inviteCode)
                   }
                   setIsOpen(false)
                 }}

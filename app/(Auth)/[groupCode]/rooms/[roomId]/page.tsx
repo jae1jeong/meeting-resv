@@ -3,7 +3,6 @@ import { requireAuth } from '@/packages/backend/lib/auth-check'
 import { MainPageClient } from '@/packages/frontend/components/auth/main-page-client'
 import { getRoomWithAuth, getRoomBookings } from '@/packages/backend/lib/server-fetch'
 import { parseDateParams, getWeekRange } from '@/packages/shared/utils/date-utils'
-import { getRoomGroupBackground } from '@/packages/backend/actions/group-background-actions'
 
 interface RoomPageProps {
   params: Promise<{
@@ -45,7 +44,22 @@ export default async function RoomPage({ params, searchParams }: RoomPageProps) 
   const [roomInfo, bookings, groupBackground] = await Promise.all([
     getRoomWithAuth(roomId, user.id),
     getRoomBookings(roomId, user.id, queryStartDate, queryEndDate),
-    getRoomGroupBackground(roomId).catch(() => null) // 배경이미지 조회 실패 시 null
+    (async () => {
+      try {
+        // 서버 사이드에서 API 호출
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const response = await fetch(`${baseUrl}/api/rooms/${roomId}/group-background`, {
+          cache: 'no-store'
+        })
+        if (response.ok) {
+          const result = await response.json()
+          return result.success ? result.data : null
+        }
+        return null
+      } catch {
+        return null
+      }
+    })()
   ])
 
   // 회의실이 존재하지 않거나 접근 권한이 없으면 404

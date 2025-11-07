@@ -1,4 +1,4 @@
-// NextAuth 호환성 레이어 - Better Auth로 리다이렉트
+// Better Auth 헬퍼 함수들 re-export
 export {
   hashPassword,
   verifyPassword,

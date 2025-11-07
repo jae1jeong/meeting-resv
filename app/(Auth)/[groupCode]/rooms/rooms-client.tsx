@@ -14,6 +14,7 @@ interface RoomsClientProps {
   initialBookings?: BookingResponse[]
   initialSelectedDate?: Date
   userId: string
+  groupCode: string
 }
 
 // 편의시설 아이콘 매핑
@@ -121,7 +122,8 @@ export function RoomsClient({
   initialRooms, 
   initialBookings = [],
   initialSelectedDate,
-  userId 
+  userId,
+  groupCode
 }: RoomsClientProps) {
   const router = useRouter()
   const [rooms, setRooms] = useState<MeetingRoomWithGroup[]>(initialRooms)
@@ -142,7 +144,7 @@ export function RoomsClient({
 
   // 회의실 클릭 핸들러
   const handleRoomClick = (roomId: string) => {
-    router.push(`/rooms/${roomId}`)
+    router.push(`/${groupCode}/rooms/${roomId}`)
   }
 
   return (

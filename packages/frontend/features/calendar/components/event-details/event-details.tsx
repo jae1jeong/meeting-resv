@@ -134,19 +134,39 @@ export default function EventDetails({
                 </span>
               </div>
 
-              {event.attendees && event.attendees.length > 0 && (
-                <div className={cn('flex items-start space-x-2')}>
-                  <Users className={cn('w-4 h-4 text-white/60 mt-0.5')} />
-                  <div>
-                    <div className={cn('text-white/60 text-xs mb-1')}>
-                      참여자
-                    </div>
-                    <div className={cn('text-white/80 text-sm')}>
-                      {event.attendees.join(', ')}
-                    </div>
+              {/* 참여자 리스트 */}
+              <div className={cn('pt-2 border-t border-white/10')}>
+                <div className={cn('flex items-center space-x-2 mb-2')}>
+                  <Users className={cn('w-4 h-4 text-white/60')} />
+                  <div className={cn('text-white/60 text-xs font-medium')}>
+                    참여자
                   </div>
                 </div>
-              )}
+                <div className={cn('flex flex-wrap gap-2')}>
+                  {(() => {
+                    // 가데이터 참여자 리스트
+                    const mockParticipants = [
+                      '김민수',
+                      '이영희',
+                      '박철수',
+                      '정민아',
+                      '최준호',
+                    ]
+                    return mockParticipants.map((name, index) => (
+                      <span
+                        key={index}
+                        className={cn(
+                          'px-3 py-1 rounded-lg',
+                          'bg-white/5 text-white/80 text-sm',
+                          'border border-white/10'
+                        )}
+                      >
+                        {name}
+                      </span>
+                    ))
+                  })()}
+                </div>
+              </div>
 
               <div className={cn('flex items-start space-x-2')}>
                 <Users className={cn('w-4 h-4 text-white/60 mt-0.5')} />

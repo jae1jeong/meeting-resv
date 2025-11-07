@@ -11,10 +11,10 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   // 어드민 권한 체크
   await requireAdmin()
   return (
-    <div className={cn("min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900")}>
+    <div className={cn("relative min-h-screen w-full")}>
       <AdminSidebar />
       <main className={cn(
-        "ml-64 pt-16 min-h-[calc(100vh-4rem)]",
+        "ml-64 pt-16 min-h-screen",
         "p-8"
       )}>
         <div className={cn("max-w-7xl mx-auto")}>

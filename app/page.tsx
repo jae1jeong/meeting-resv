@@ -14,12 +14,12 @@ export default async function Home() {
         some: { userId: user.id }
       }
     },
-    select: { slug: true },
+    select: { inviteCode: true },
     orderBy: { createdAt: 'asc' }
   })
 
-  if (firstGroup?.slug) {
-    redirect(`/${firstGroup.slug}/rooms`)
+  if (firstGroup?.inviteCode) {
+    redirect(`/${firstGroup.inviteCode}/rooms`)
   } else {
     // 그룹이 없는 경우 그룹 가입 페이지로
     redirect('/groups/join')

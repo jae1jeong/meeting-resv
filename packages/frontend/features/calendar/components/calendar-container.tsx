@@ -1,19 +1,25 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { WeekView } from "./week-view"
-import { useCalendar } from "../hooks/useCalendar"
-import CalendarControls from "./calendar-controls/calendar-controls"
-import EventDetails from "./event-details/event-details"
+import { WeekView } from './week-view'
+import { useCalendar } from '../hooks/useCalendar'
+import CalendarControls from './calendar-controls/calendar-controls'
+import EventDetails from './event-details/event-details'
 import { BookingCreateModal } from '@/packages/frontend/components/bookings/booking-create-modal'
 import { BookingTimeChangeModal } from '@/packages/frontend/components/modals/booking-time-change-modal'
-import { checkTimeSlotAvailabilityAction, updateBookingTimeAction } from '@/packages/backend/actions/booking-dnd-actions'
-import { getRoomBookingsAction, getBookingsForDateRangeAction } from '@/packages/backend/actions/booking-actions-fetch'
-import { CalendarEvent } from "../types"
+import { BookingService } from '@/packages/frontend/services/booking.service'
+import { CalendarEvent } from '../types'
 import type { BookingResponse } from '@/packages/shared/types/api/booking'
 import type { MeetingRoomWithGroup } from '@/packages/shared/types/api/room'
-import { formatDateForURL, getWeekRange, toKSTDateString, parseKSTDate, isSameDay, getWeekDates } from '@/packages/shared/utils/date-utils'
+import {
+  formatDateForURL,
+  getWeekRange,
+  toKSTDateString,
+  parseKSTDate,
+  isSameDay,
+  getWeekDates,
+} from '@/packages/shared/utils/date-utils'
 import { Plus } from 'lucide-react'
 
 interface CalendarContainerProps {
@@ -26,7 +32,10 @@ interface CalendarContainerProps {
 }
 
 // BookingResponse를 CalendarEvent로 변환
-const convertBookingToCalendarEvent = (booking: BookingResponse, dayIndex: number): CalendarEvent => {
+const convertBookingToCalendarEvent = (
+  booking: BookingResponse,
+  dayIndex: number
+): CalendarEvent => {
   return {
     id: booking.id, // UUID 문자열 그대로 사용
     title: booking.title,
@@ -36,9 +45,9 @@ const convertBookingToCalendarEvent = (booking: BookingResponse, dayIndex: numbe
     day: dayIndex + 1, // 1-7 (일-토)
     description: booking.description || '',
     location: booking.room?.name || '',
-    attendees: booking.participants?.map(p => p.user.name || '') || [],
+    attendees: booking.participants?.map((p) => p.user.name || '') || [],
     organizer: booking.creator?.name || '',
-    bookingData: booking // 원본 데이터 보관
+    bookingData: booking, // 원본 데이터 보관
   }
 }
 
@@ -50,7 +59,7 @@ export function CalendarContainer({
   roomInfo,
   initialBookings = [],
   initialStartDate,
-  initialEndDate
+  initialEndDate,
 }: CalendarContainerProps) {
   const router = useRouter()
 
@@ -71,7 +80,8 @@ export function CalendarContainer({
   } = useCalendar(initialCurrentDate)
 
   // 로컬 예약 상태 관리 (Optimistic UI를 위함)
-  const [localBookings, setLocalBookings] = useState<BookingResponse[]>(initialBookings)
+  const [localBookings, setLocalBookings] =
+    useState<BookingResponse[]>(initialBookings)
 
   const [events, setEvents] = useState<CalendarEvent[]>(() => {
     // 서버에서 전달받은 예약 데이터가 있으면 변환해서 초기값으로 설정
@@ -79,10 +89,13 @@ export function CalendarContainer({
       const weekDates = getWeekDates(currentDate) // currentDate 사용
       const calendarEvents: CalendarEvent[] = []
 
-      initialBookings.forEach(booking => {
-        const bookingDate = typeof booking.date === 'string' ? parseKSTDate(booking.date as string) : new Date(booking.date)
-        const dayIndex = weekDates.findIndex(date =>
-          isSameDay(date, bookingDate) // isSameDay 함수 사용
+      initialBookings.forEach((booking) => {
+        const bookingDate =
+          typeof booking.date === 'string'
+            ? parseKSTDate(booking.date as string)
+            : new Date(booking.date)
+        const dayIndex = weekDates.findIndex(
+          (date) => isSameDay(date, bookingDate) // isSameDay 함수 사용
         )
 
         if (dayIndex !== -1) {
@@ -106,7 +119,7 @@ export function CalendarContainer({
     startTime?: string
     endTime?: string
   }>({})
-  
+
   // DnD 관련 상태
   const [isTimeChangeModalOpen, setIsTimeChangeModalOpen] = useState(false)
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
@@ -124,17 +137,26 @@ export function CalendarContainer({
   } | null>(null)
 
   // 예약 데이터를 이벤트로 변환하는 헬퍼 함수
-  const convertBookingsToEvents = (bookings: BookingResponse[], weekDates: Date[]): CalendarEvent[] => {
+  const convertBookingsToEvents = (
+    bookings: BookingResponse[],
+    weekDates: Date[]
+  ): CalendarEvent[] => {
     const calendarEvents: CalendarEvent[] = []
 
-    bookings.forEach(booking => {
-      const bookingDate = typeof booking.date === 'string' ? parseKSTDate(booking.date as string) : new Date(booking.date)
+    bookings.forEach((booking) => {
+      const bookingDate =
+        typeof booking.date === 'string'
+          ? parseKSTDate(booking.date as string)
+          : new Date(booking.date)
       console.log(`📅 [CONVERT] ${booking.title}:`)
       console.log('  - booking.date:', booking.date)
       console.log('  - bookingDate:', bookingDate)
-      console.log('  - weekDates:', weekDates.map(d => toKSTDateString(d)))
+      console.log(
+        '  - weekDates:',
+        weekDates.map((d) => toKSTDateString(d))
+      )
 
-      const dayIndex = weekDates.findIndex(date =>
+      const dayIndex = weekDates.findIndex((date) =>
         isSameDay(date, bookingDate)
       )
       console.log('  - dayIndex:', dayIndex)
@@ -149,38 +171,52 @@ export function CalendarContainer({
 
   // 로컬 상태 업데이트 함수 (Optimistic UI)
   const updateLocalBooking = (updatedBooking: BookingResponse) => {
-    setLocalBookings(prev =>
-      prev.map(booking =>
+    // 함수형 업데이트 사용 (클로저 문제 방지)
+    setLocalBookings((prev) => {
+      const updatedBookings = prev.map((booking) =>
         booking.id === updatedBooking.id ? updatedBooking : booking
       )
-    )
 
-    // 이벤트도 즉시 업데이트
-    const weekDates = getWeekDates(currentDate)
-    setEvents(convertBookingsToEvents(
-      localBookings.map(b => b.id === updatedBooking.id ? updatedBooking : b),
-      weekDates
-    ))
+      // 이벤트도 즉시 업데이트 (최신 상태 사용)
+      const weekDates = getWeekDates(currentDate)
+      const calendarEvents = convertBookingsToEvents(updatedBookings, weekDates)
+      setEvents(calendarEvents)
+
+      return updatedBookings
+    })
   }
 
   // 로컬 상태 추가 함수 (Optimistic UI)
   const addLocalBooking = (newBooking: BookingResponse) => {
-    const updatedBookings = [...localBookings, newBooking]
-    setLocalBookings(updatedBookings)
+    // 함수형 업데이트 사용 (클로저 문제 방지)
+    setLocalBookings((prevBookings) => {
+      // 중복 방지
+      if (prevBookings.some((b) => b.id === newBooking.id)) {
+        return prevBookings
+      }
+      const updatedBookings = [...prevBookings, newBooking]
 
-    // 이벤트도 즉시 업데이트
-    const weekDates = getWeekDates(currentDate)
-    setEvents(convertBookingsToEvents(updatedBookings, weekDates))
+      // 이벤트도 즉시 업데이트 (로딩 없이)
+      const weekDates = getWeekDates(currentDate)
+      const calendarEvents = convertBookingsToEvents(updatedBookings, weekDates)
+      setEvents(calendarEvents)
+
+      return updatedBookings
+    })
   }
 
   // 예약 데이터 로드 (날짜 변경 시에만 호출)
-  const loadBookings = async (forceReload = false) => {
+  const loadBookings = async (forceReload = false, silent = false) => {
     // 초기 데이터가 있고 강제 리로드가 아니면 API 호출하지 않음
     if (!forceReload && localBookings.length > 0) {
       return
     }
 
-    setIsLoading(true)
+    // silent 모드가 아니면 로딩 표시
+    if (!silent) {
+      setIsLoading(true)
+    }
+
     try {
       const weekDates = getWeekDates(currentDate) // currentDate 사용
       const startDate = weekDates[0]
@@ -188,15 +224,18 @@ export function CalendarContainer({
 
       let response
       if (roomId) {
-        // 특정 회의실의 예약만 조회 (서버 액션 사용)
-        response = await getRoomBookingsAction(
+        // 특정 회의실의 예약만 조회
+        response = await BookingService.getRoomBookings(
           roomId,
-          toKSTDateString(startDate), // KST 날짜 문자열로 변환
-          toKSTDateString(endDate) // KST 날짜 문자열로 변환
+          toKSTDateString(startDate),
+          toKSTDateString(endDate)
         )
       } else {
-        // 모든 예약 조회 (서버 액션 사용)
-        response = await getBookingsForDateRangeAction(startDate, endDate)
+        // 모든 예약 조회
+        response = await BookingService.getBookingsForDateRange(
+          startDate,
+          endDate
+        )
       }
 
       if (response.success && response.data) {
@@ -214,7 +253,10 @@ export function CalendarContainer({
       // 에러 시 초기 이벤트 사용
       setEvents(initialEvents)
     } finally {
-      setIsLoading(false)
+      // silent 모드가 아니면 로딩 해제
+      if (!silent) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -250,8 +292,10 @@ export function CalendarContainer({
     }
 
     // 초기 로드 체크: initialStartDate가 있고 현재 날짜와 동일한 경우만 초기 로드로 판단
-    const isInitialLoad = initialStartDate &&
-      Math.abs(currentDate.getTime() - initialStartDate.getTime()) < 24 * 60 * 60 * 1000 // 24시간 이내
+    const isInitialLoad =
+      initialStartDate &&
+      Math.abs(currentDate.getTime() - initialStartDate.getTime()) <
+        24 * 60 * 60 * 1000 // 24시간 이내
 
     // 초기 로드가 아니거나 initialStartDate가 없는 경우 URL 업데이트
     if (!isInitialLoad || !initialStartDate) {
@@ -259,7 +303,7 @@ export function CalendarContainer({
     }
 
     // 초기 데이터가 없거나 날짜가 변경된 경우 데이터 리로드
-    if (localBookings.length === 0 || (!isInitialLoad || !initialStartDate)) {
+    if (localBookings.length === 0 || !isInitialLoad || !initialStartDate) {
       loadBookings(true)
     }
   }, [currentDate, roomId]) // dependencies 최소화
@@ -267,10 +311,28 @@ export function CalendarContainer({
   // 예약 생성 완료 후 콜백 (Optimistic UI)
   const handleBookingCreated = (newBooking?: BookingResponse) => {
     if (newBooking) {
-      // 로컬 상태에 즉시 추가 (Optimistic Update)
+      // 항상 즉시 로컬 상태에 추가 (Optimistic Update) - 로딩 없이
       addLocalBooking(newBooking)
+
+      // 현재 주의 날짜 범위 확인
+      const weekDates = getWeekDates(currentDate)
+      const bookingDate =
+        typeof newBooking.date === 'string'
+          ? parseKSTDate(newBooking.date)
+          : new Date(newBooking.date)
+
+      // 현재 주에 포함되지 않은 경우에만 백그라운드에서 서버 데이터 동기화 (로딩 없이)
+      const isInCurrentWeek = weekDates.some((date) =>
+        isSameDay(date, bookingDate)
+      )
+      if (!isInCurrentWeek) {
+        // silent 모드로 백그라운드 동기화
+        loadBookings(true, true).catch((error) => {
+          console.error('예약 데이터 동기화 오류:', error)
+        })
+      }
     } else {
-      // 서버에서 데이터 다시 로드 (fallback)
+      // newBooking이 없는 경우에만 로딩 표시하며 데이터 로드
       loadBookings(true)
     }
   }
@@ -279,16 +341,16 @@ export function CalendarContainer({
   const handleEmptySlotClick = (day: number, timeSlot: string) => {
     const weekDates = getWeekDates(currentDate) // 현재 보고 있는 주의 날짜 사용
     const selectedDate = weekDates[day - 1] // day는 1-7
-    
+
     // 시작 시간과 종료 시간 설정 (1시간 기본)
     const startTime = `${timeSlot.toString().padStart(2, '0')}:00`
     const endHour = parseInt(timeSlot) + 1
     const endTime = `${endHour.toString().padStart(2, '0')}:00`
-    
+
     setCreateModalInitialData({
       date: selectedDate,
       startTime,
-      endTime
+      endTime,
     })
     setIsCreateModalOpen(true)
   }
@@ -298,13 +360,17 @@ export function CalendarContainer({
     setCreateModalInitialData({
       date: currentDate, // 현재 캘린더에서 보고 있는 날짜
       startTime: undefined,
-      endTime: undefined
+      endTime: undefined,
     })
     setIsCreateModalOpen(true)
   }
 
   // 이벤트 드래그 엔드 처리
-  const handleEventDragEnd = async (event: CalendarEvent, newDayIndex: number, newTimeSlot: string) => {
+  const handleEventDragEnd = async (
+    event: CalendarEvent,
+    newDayIndex: number,
+    newTimeSlot: string
+  ) => {
     if (!event.bookingData || !roomId) {
       return
     }
@@ -313,7 +379,7 @@ export function CalendarContainer({
     setOriginalEventPosition({
       day: event.day,
       startTime: event.startTime,
-      endTime: event.endTime
+      endTime: event.endTime,
     })
 
     // 새로운 날짜 계산 (newDayIndex는 0-based)
@@ -324,32 +390,34 @@ export function CalendarContainer({
 
     // 드래그된 이벤트와 새로운 시간 정보 저장
     setDraggedEvent(event)
-    
+
     // 예약 시간 계산 (기존 예약의 duration을 유지)
     const originalStart = event.startTime
     const originalEnd = event.endTime
     const [startHour, startMin] = originalStart.split(':').map(Number)
     const [endHour, endMin] = originalEnd.split(':').map(Number)
-    
-    const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin)
+
+    const durationMinutes = endHour * 60 + endMin - (startHour * 60 + startMin)
     const newStartHour = parseInt(newTimeSlot)
-    const newEndMinutes = (newStartHour * 60) + durationMinutes
+    const newEndMinutes = newStartHour * 60 + durationMinutes
     const newEndHour = Math.floor(newEndMinutes / 60)
     const newEndMin = newEndMinutes % 60
 
     const newStartTime = `${newStartHour.toString().padStart(2, '0')}:00` // 새 시간 슬롯은 항상 00분에 시작
-    const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMin.toString().padStart(2, '0')}`
+    const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMin
+      .toString()
+      .padStart(2, '0')}`
 
     setNewTimeSlot({
       day: newDay,
       timeSlot: newStartTime,
-      date: newDateStr
+      date: newDateStr,
     })
 
     // 임시로 UI 업데이트 (드래그 피드백)
-    setEvents(prevEvents => 
-      prevEvents.map(e => 
-        e.id === event.id 
+    setEvents((prevEvents) =>
+      prevEvents.map((e) =>
+        e.id === event.id
           ? { ...e, day: newDay, startTime: newStartTime, endTime: newEndTime }
           : e
       )
@@ -359,17 +427,18 @@ export function CalendarContainer({
     setIsCheckingAvailability(true)
 
     try {
-      const availability = await checkTimeSlotAvailabilityAction({
-        roomId: roomId,
-        date: newDateStr,
-        startTime: newStartTime,
-        endTime: newEndTime,
-        excludeBookingId: event.bookingData.id
-      })
+      const availability = await BookingService.checkTimeSlotAvailability(
+        roomId,
+        newDateStr,
+        newStartTime,
+        newEndTime,
+        event.bookingData.id
+      )
 
+      // 가용성 확인 완료
       setIsCheckingAvailability(false)
 
-      if (!availability.success || !availability.available) {
+      if (!availability.success || !availability.data?.available) {
         // 충돌이 있으면 원래 위치로 복원
         restoreEventPosition()
         alert('해당 시간대에 다른 예약이 있어 이동할 수 없습니다.')
@@ -388,14 +457,14 @@ export function CalendarContainer({
   // 원래 위치로 복원
   const restoreEventPosition = () => {
     if (draggedEvent && originalEventPosition) {
-      setEvents(prevEvents => 
-        prevEvents.map(e => 
-          e.id === draggedEvent.id 
-            ? { 
-                ...e, 
-                day: originalEventPosition.day, 
+      setEvents((prevEvents) =>
+        prevEvents.map((e) =>
+          e.id === draggedEvent.id
+            ? {
+                ...e,
+                day: originalEventPosition.day,
                 startTime: originalEventPosition.startTime,
-                endTime: originalEventPosition.endTime
+                endTime: originalEventPosition.endTime,
               }
             : e
         )
@@ -433,14 +502,19 @@ export function CalendarContainer({
         const [startHour, startMin] = originalStart.split(':').map(Number)
         const [endHour, endMin] = originalEnd.split(':').map(Number)
 
-        const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin)
-        const [newStartHour, newStartMin] = newTimeSlot.timeSlot.split(':').map(Number)
-        const newEndMinutes = (newStartHour * 60 + newStartMin) + durationMinutes
+        const durationMinutes =
+          endHour * 60 + endMin - (startHour * 60 + startMin)
+        const [newStartHour, newStartMin] = newTimeSlot.timeSlot
+          .split(':')
+          .map(Number)
+        const newEndMinutes = newStartHour * 60 + newStartMin + durationMinutes
         const newEndHour = Math.floor(newEndMinutes / 60)
         const newEndMin = newEndMinutes % 60
 
-        return `${newEndHour.toString().padStart(2, '0')}:${newEndMin.toString().padStart(2, '0')}`
-      })()
+        return `${newEndHour.toString().padStart(2, '0')}:${newEndMin
+          .toString()
+          .padStart(2, '0')}`
+      })(),
     }
 
     // UI를 즉시 업데이트
@@ -454,20 +528,25 @@ export function CalendarContainer({
       const [startHour, startMin] = originalStart.split(':').map(Number)
       const [endHour, endMin] = originalEnd.split(':').map(Number)
 
-      const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin)
-      const [newStartHour, newStartMin] = newTimeSlot.timeSlot.split(':').map(Number)
-      const newEndMinutes = (newStartHour * 60 + newStartMin) + durationMinutes
+      const durationMinutes =
+        endHour * 60 + endMin - (startHour * 60 + startMin)
+      const [newStartHour, newStartMin] = newTimeSlot.timeSlot
+        .split(':')
+        .map(Number)
+      const newEndMinutes = newStartHour * 60 + newStartMin + durationMinutes
       const newEndHour = Math.floor(newEndMinutes / 60)
       const newEndMin = newEndMinutes % 60
 
-      const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMin.toString().padStart(2, '0')}`
+      const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMin
+        .toString()
+        .padStart(2, '0')}`
 
-      const result = await updateBookingTimeAction({
-        bookingId: draggedEvent.bookingData.id,
-        newDate: newTimeSlot.date,
-        newStartTime: newTimeSlot.timeSlot,
-        newEndTime: newEndTime
-      })
+      const result = await BookingService.updateBookingTime(
+        draggedEvent.bookingData.id,
+        newTimeSlot.date,
+        newTimeSlot.timeSlot,
+        newEndTime
+      )
 
       if (result.success && result.data) {
         // 서버 응답으로 로컬 상태 업데이트
@@ -476,9 +555,11 @@ export function CalendarContainer({
       } else {
         // 실패 시 원래 상태로 롤백
         if (draggedEvent.bookingData) {
-          setLocalBookings(prev =>
-            prev.map(booking =>
-              booking.id === draggedEvent.bookingData!.id ? draggedEvent.bookingData! : booking
+          setLocalBookings((prev) =>
+            prev.map((booking) =>
+              booking.id === draggedEvent.bookingData!.id
+                ? draggedEvent.bookingData!
+                : booking
             )
           )
         }
@@ -488,9 +569,11 @@ export function CalendarContainer({
     } catch (error) {
       // 에러 시 원래 상태로 롤백
       if (draggedEvent.bookingData) {
-        setLocalBookings(prev =>
-          prev.map(booking =>
-            booking.id === draggedEvent.bookingData!.id ? draggedEvent.bookingData! : booking
+        setLocalBookings((prev) =>
+          prev.map((booking) =>
+            booking.id === draggedEvent.bookingData!.id
+              ? draggedEvent.bookingData!
+              : booking
           )
         )
       }
@@ -515,7 +598,6 @@ export function CalendarContainer({
         onNavigateToPreviousWeek={navigateToPreviousWeek}
         onNavigateToNextWeek={navigateToNextWeek}
       />
-
 
       {/* Week View */}
       {isLoading ? (
@@ -576,24 +658,36 @@ export function CalendarContainer({
           onCancel={handleTimeChangeCancel}
           bookingTitle={draggedEvent.title}
           originalTime={{
-            date: toKSTDateString(getWeekDates(currentDate)[originalEventPosition.day - 1]), // KST 날짜 문자열로 변환
+            date: toKSTDateString(
+              getWeekDates(currentDate)[originalEventPosition.day - 1]
+            ), // KST 날짜 문자열로 변환
             startTime: originalEventPosition.startTime,
-            endTime: draggedEvent.endTime
+            endTime: draggedEvent.endTime,
           }}
           newTime={{
             date: newTimeSlot.date,
             startTime: newTimeSlot.timeSlot,
             endTime: (() => {
               // 새로운 종료시간 계산
-              const [startHour, startMin] = originalEventPosition.startTime.split(':').map(Number)
-              const [endHour, endMin] = draggedEvent.endTime.split(':').map(Number)
-              const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin)
-              const [newStartHour, newStartMin] = newTimeSlot.timeSlot.split(':').map(Number)
-              const newEndMinutes = (newStartHour * 60 + newStartMin) + durationMinutes
+              const [startHour, startMin] = originalEventPosition.startTime
+                .split(':')
+                .map(Number)
+              const [endHour, endMin] = draggedEvent.endTime
+                .split(':')
+                .map(Number)
+              const durationMinutes =
+                endHour * 60 + endMin - (startHour * 60 + startMin)
+              const [newStartHour, newStartMin] = newTimeSlot.timeSlot
+                .split(':')
+                .map(Number)
+              const newEndMinutes =
+                newStartHour * 60 + newStartMin + durationMinutes
               const newEndHour = Math.floor(newEndMinutes / 60)
               const newEndMin = newEndMinutes % 60
-              return `${newEndHour.toString().padStart(2, '0')}:${newEndMin.toString().padStart(2, '0')}`
-            })()
+              return `${newEndHour.toString().padStart(2, '0')}:${newEndMin
+                .toString()
+                .padStart(2, '0')}`
+            })(),
           }}
           isLoading={isUpdatingBooking}
           isChecking={isCheckingAvailability}

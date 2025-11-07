@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateGroup } from '@/packages/backend/actions/admin/group-actions'
+import { AdminService } from '@/packages/frontend/services/admin.service'
 import { GlassCard } from '@/packages/frontend/components/ui/glass-card'
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { GlassInput } from '@/packages/frontend/components/ui/glass-input'
@@ -73,7 +73,7 @@ export default function GroupEditClient({ group }: GroupEditClientProps) {
     setIsLoading(true)
 
     try {
-      await updateGroup(group.id, {
+      const result = await AdminService.updateGroup(group.id, {
         name: formData.name,
         description: formData.description || undefined,
         backgroundImage: formData.backgroundImage || undefined,
@@ -82,8 +82,12 @@ export default function GroupEditClient({ group }: GroupEditClientProps) {
         backgroundPosition: formData.backgroundPosition
       })
 
-      router.push('/admin/groups')
-      router.refresh()
+      if (result.success) {
+        router.push('/admin/groups')
+        router.refresh()
+      } else {
+        alert(result.error?.message || '그룹 업데이트에 실패했습니다')
+      }
     } catch (error) {
       console.error('그룹 업데이트 오류:', error)
       alert('그룹 업데이트에 실패했습니다')

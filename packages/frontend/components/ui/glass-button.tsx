@@ -55,6 +55,7 @@ export function GlassButton({
     <button 
       className={cn(
         'transition-all duration-300 font-medium',
+        'flex items-center justify-center',
         variantClasses[variant],
         getSizeClasses(size),
         radiusClasses[radius],

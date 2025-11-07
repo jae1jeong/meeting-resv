@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development'
+const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'fallback-secret-for-development'
 const ACCESS_TOKEN_EXPIRES_IN = '9h' // 9시간
 
 interface TokenPayload {

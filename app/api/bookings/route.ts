@@ -1,10 +1,12 @@
 import { NextRequest } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/packages/backend/lib/prisma'
 import { getSession } from '@/packages/backend/auth/better-auth'
 import { successResponse, errorResponse, paginatedResponse } from '@/packages/backend/utils/api-response'
 import { CreateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
 import { checkRoomAvailability, validateTimeSlot } from '@/packages/shared/utils/booking-utils'
 import { parseKSTDate, setToKSTEndOfDay } from '@/packages/shared/utils/date-utils'
+import { assignBookingColor } from '@/packages/shared/utils/color-utils'
 import { Prisma } from '@prisma/client'
 
 // GET /api/bookings - List bookings
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
       startTime, 
       endTime, 
       participantIds,
+      color,
       recurringPattern 
     } = body
 
@@ -189,6 +192,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 색상 할당: 색상이 제공되지 않으면 사용자의 기존 예약 색상과 겹치지 않는 랜덤 색상 할당
+    let assignedColor = color
+    if (!assignedColor) {
+      // 사용자의 기존 예약 색상 조회
+      const existingBookings = await prisma.booking.findMany({
+        where: { creatorId: session.user.id },
+        select: { color: true }
+      })
+      const existingColors = existingBookings.map(b => b.color)
+      assignedColor = assignBookingColor(existingColors)
+    }
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {
@@ -199,6 +214,7 @@ export async function POST(request: NextRequest) {
         date: bookingDate,
         startTime,
         endTime,
+        color: assignedColor,
         participants: participantIds ? {
           create: participantIds.map((userId: string) => ({
             userId
@@ -235,6 +251,10 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+
+    // 태그 기반 재검증
+    revalidateTag(`room-${roomId}`)
+    revalidateTag(`bookings-${roomId}`)
 
     return successResponse<BookingResponse>(booking, '예약이 생성되었습니다', 201)
   } catch (error) {

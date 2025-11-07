@@ -93,14 +93,14 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-16 h-[calc(100vh-4rem)] w-64",
+      "fixed left-0 top-0 h-screen w-64 z-10",
       "bg-gradient-to-b from-black/40 via-black/30 to-black/40",
       "backdrop-blur-2xl border-r border-white/10",
-      "overflow-y-auto scrollbar-thin scrollbar-thumb-white/10",
+      "flex flex-col",
       className
     )}>
       {/* Admin 헤더 */}
-      <div className={cn("p-6 border-b border-white/10")}>
+      <div className={cn("p-6 border-b border-white/10 flex-shrink-0")}>
         <div className={cn("flex items-center space-x-3")}>
           <div className={cn(
             "w-10 h-10 rounded-xl",
@@ -118,7 +118,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       </div>
 
       {/* 메뉴 아이템 */}
-      <nav className={cn("p-4 space-y-2")}>
+      <nav className={cn("p-4 space-y-2 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10")}>
         {menuItems.map((item) => {
           const Icon = item.icon
           const isExpanded = expandedItems.includes(item.id)
@@ -215,7 +215,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
 
       {/* 하단 정보 */}
       <div className={cn(
-        "absolute bottom-0 left-0 right-0 p-6",
+        "p-6 flex-shrink-0",
         "border-t border-white/10",
         "bg-gradient-to-t from-black/40 to-transparent"
       )}>

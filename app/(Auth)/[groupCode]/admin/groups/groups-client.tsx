@@ -6,7 +6,7 @@ import { GroupList } from '@/packages/frontend/components/admin/groups/group-lis
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { Plus, Search, Filter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { deleteGroup } from '@/packages/backend/actions/admin/group-actions'
+import { AdminService } from '@/packages/frontend/services/admin.service'
 
 interface Group {
   id: string
@@ -50,9 +50,13 @@ export default function AdminGroupsClient({ initialGroups }: AdminGroupsClientPr
   const handleDeleteGroup = async (groupId: string) => {
     if (confirm('정말로 이 그룹을 삭제하시겠습니까?')) {
       try {
-        await deleteGroup(groupId)
-        // 로컬 상태 업데이트
-        setGroups(groups.filter(g => g.id !== groupId))
+        const result = await AdminService.deleteGroup(groupId)
+        if (result.success) {
+          // 로컬 상태 업데이트
+          setGroups(groups.filter(g => g.id !== groupId))
+        } else {
+          alert(result.error?.message || '그룹 삭제에 실패했습니다.')
+        }
       } catch (error) {
         console.error('그룹 삭제 실패:', error)
         alert('그룹 삭제에 실패했습니다.')

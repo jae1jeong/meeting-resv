@@ -6,11 +6,7 @@ import { cn } from '@/packages/shared/utils/utils'
 import { MemberManagement } from '@/packages/frontend/components/admin/groups/member-management'
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { ArrowLeft } from 'lucide-react'
-import {
-  addGroupMember,
-  removeGroupMember,
-  changeGroupMemberRole
-} from '@/packages/backend/actions/admin/group-actions'
+import { AdminService } from '@/packages/frontend/services/admin.service'
 
 interface Member {
   id: string
@@ -52,12 +48,13 @@ export default function GroupDetailClient({
         // 멤버 ID가 아닌 groupMember의 ID를 찾아야 함
         const memberToRemove = members.find(m => m.userId === memberId)
         if (memberToRemove) {
-          await removeGroupMember({
-            groupId,
-            memberId: memberToRemove.id
-          })
-          // 로컬 상태 업데이트
-          setMembers(members.filter(m => m.userId !== memberId))
+          const result = await AdminService.removeGroupMember(groupId, memberToRemove.id)
+          if (result.success) {
+            // 로컬 상태 업데이트
+            setMembers(members.filter(m => m.userId !== memberId))
+          } else {
+            alert(result.error?.message || '멤버 제거에 실패했습니다.')
+          }
         }
       } catch (error) {
         console.error('멤버 제거 실패:', error)
@@ -71,14 +68,19 @@ export default function GroupDetailClient({
       // 멤버 ID가 아닌 groupMember의 ID를 찾아야 함
       const memberToUpdate = members.find(m => m.userId === memberId)
       if (memberToUpdate) {
-        await changeGroupMemberRole({
-          memberId: memberToUpdate.id,
+        const result = await AdminService.changeGroupMemberRole(
+          groupId,
+          memberToUpdate.id,
           newRole
-        })
-        // 로컬 상태 업데이트
-        setMembers(members.map(m =>
-          m.userId === memberId ? { ...m, role: newRole } : m
-        ))
+        )
+        if (result.success) {
+          // 로컬 상태 업데이트
+          setMembers(members.map(m =>
+            m.userId === memberId ? { ...m, role: newRole } : m
+          ))
+        } else {
+          alert(result.error?.message || '역할 변경에 실패했습니다.')
+        }
       }
     } catch (error) {
       console.error('역할 변경 실패:', error)

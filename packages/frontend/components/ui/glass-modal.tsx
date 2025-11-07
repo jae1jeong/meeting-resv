@@ -43,13 +43,14 @@ export function GlassModal({
       
       {/* Modal */}
       <div className={cn(
-        'relative glass-card max-w-lg w-full mx-4 animate-fade-in backdrop-blur-xl',
+        'relative glass-card max-w-lg w-full mx-4 max-h-[90vh] animate-fade-in backdrop-blur-xl',
         'transform transition-all duration-300',
+        'flex flex-col',
         className
       )}>
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             {title && (
               <h2 className="text-xl font-semibold text-white">{title}</h2>
             )}
@@ -63,7 +64,7 @@ export function GlassModal({
         )}
         
         {/* Content */}
-        <div className="text-white">
+        <div className="text-white overflow-y-auto flex-1 min-h-0">
           {children}
         </div>
       </div>

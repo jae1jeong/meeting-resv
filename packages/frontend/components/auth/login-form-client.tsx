@@ -44,8 +44,8 @@ export function LoginFormClient({ className = '', initialError }: LoginFormClien
       const groupsResponse = await fetch('/api/users/me/groups')
       if (groupsResponse.ok) {
         const groups = await groupsResponse.json()
-        if (groups.length > 0 && groups[0].slug) {
-          router.push(`/${groups[0].slug}/rooms`)
+        if (groups.length > 0 && groups[0].inviteCode) {
+          router.push(`/${groups[0].inviteCode}/rooms`)
         } else {
           // 그룹이 없는 경우
           router.push('/groups/join')

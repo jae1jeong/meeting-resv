@@ -33,6 +33,7 @@ export interface CreateBookingRequest {
   startTime: string // HH:mm format
   endTime: string // HH:mm format
   participantIds?: string[]
+  color?: string // 예약 카드 색상 (예: 'bg-blue-500')
   recurringPattern?: CreateRecurringPatternRequest
 }
 

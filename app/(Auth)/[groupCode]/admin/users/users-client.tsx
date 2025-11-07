@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { toggleAdminStatus } from '@/packages/backend/actions/admin/user-admin-actions'
+import { AdminService } from '@/packages/frontend/services/admin.service'
 import { GlassCard } from '@/packages/frontend/components/ui/glass-card'
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { cn } from '@/packages/shared/utils/utils'
@@ -42,16 +42,19 @@ export default function AdminUsersClient({ initialUsers }: AdminUsersClientProps
   const handleToggleAdmin = async (userId: string) => {
     setIsLoading(userId)
     try {
-      const updatedUser = await toggleAdminStatus(userId)
+      const result = await AdminService.toggleAdminStatus(userId)
 
-      // 로컬 상태 업데이트
-      setUsers(prev =>
-        prev.map(user =>
-          user.id === userId ? { ...user, isAdmin: updatedUser.isAdmin } : user
+      if (result.success && result.data) {
+        // 로컬 상태 업데이트
+        setUsers(prev =>
+          prev.map(user =>
+            user.id === userId ? { ...user, isAdmin: result.data.isAdmin } : user
+          )
         )
-      )
-
-      router.refresh()
+        router.refresh()
+      } else {
+        alert(result.error?.message || '권한 변경에 실패했습니다')
+      }
     } catch (error: unknown) {
       alert(error instanceof Error ? error.message : '권한 변경에 실패했습니다')
     } finally {

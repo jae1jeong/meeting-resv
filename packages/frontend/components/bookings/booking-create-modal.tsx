@@ -5,12 +5,16 @@ import { GlassModal } from '@/packages/frontend/components/ui/glass-modal'
 import { GlassInput } from '@/packages/frontend/components/ui/glass-input'
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { cn } from '@/packages/shared/utils/utils'
-import { createBookingAction } from '@/packages/backend/actions/booking-actions'
+import { BookingService } from '@/packages/frontend/services/booking.service'
 import { RoomService } from '@/packages/frontend/services/room.service'
-import type { CreateBookingRequest, BookingResponse } from '@/packages/shared/types/api/booking'
+import type {
+  CreateBookingRequest,
+  BookingResponse,
+} from '@/packages/shared/types/api/booking'
 import type { MeetingRoomWithGroup } from '@/packages/shared/types/api/room'
-import { X, Clock, MapPin, Users, Calendar } from 'lucide-react'
+import { X, Clock, MapPin, Users, Calendar, Palette } from 'lucide-react'
 import { toKSTDateString } from '@/packages/shared/utils/date-utils'
+import { BOOKING_COLORS } from '@/packages/shared/utils/color-utils'
 
 interface BookingCreateModalProps {
   isOpen: boolean
@@ -26,6 +30,7 @@ interface BookingCreateModalProps {
 
 interface BookingFormData extends Omit<CreateBookingRequest, 'participantIds'> {
   participantEmails: string
+  color: string
 }
 
 // 30분 단위 시간 슬롯 생성 (08:00 ~ 18:00)
@@ -50,16 +55,19 @@ export function BookingCreateModal({
   initialEndTime,
   fixedRoomId,
   roomInfo,
-  className = ''
+  className = '',
 }: BookingCreateModalProps) {
   const [formData, setFormData] = useState<BookingFormData>({
     title: '',
     description: '',
     roomId: '',
-    date: initialDate ? toKSTDateString(initialDate) : toKSTDateString(new Date()),
+    date: initialDate
+      ? toKSTDateString(initialDate)
+      : toKSTDateString(new Date()),
     startTime: initialStartTime || '09:00',
     endTime: initialEndTime || '10:00',
-    participantEmails: ''
+    participantEmails: '',
+    color: 'bg-blue-500',
   })
 
   const [isLoading, setIsLoading] = useState(false)
@@ -69,11 +77,11 @@ export function BookingCreateModal({
   const [roomsLoading, setRoomsLoading] = useState(false)
   const [availabilityChecking, setAvailabilityChecking] = useState(false)
   const [conflictWarning, setConflictWarning] = useState('')
-  
+
   // 회의실 목록 로드
   const loadRooms = async () => {
     if (fixedRoomId || roomsLoading || rooms.length > 0) return
-    
+
     setRoomsLoading(true)
     try {
       const result = await RoomService.getRooms({ pageSize: 100 })
@@ -94,14 +102,17 @@ export function BookingCreateModal({
         title: '',
         description: '',
         roomId: fixedRoomId || '',
-        date: initialDate ? toKSTDateString(initialDate) : toKSTDateString(new Date()),
+        date: initialDate
+          ? toKSTDateString(initialDate)
+          : toKSTDateString(new Date()),
         startTime: initialStartTime || '09:00',
         endTime: initialEndTime || '10:00',
-        participantEmails: ''
+        participantEmails: '',
+        color: 'bg-blue-500',
       })
       setError('')
       setFieldErrors({})
-      
+
       // 회의실 목록 로드 (fixedRoomId가 없는 경우에만)
       if (!fixedRoomId) {
         loadRooms()
@@ -111,14 +122,16 @@ export function BookingCreateModal({
 
   // 시간 유효성 검사
   const validateTimeSlots = (start: string, end: string): string | null => {
-    const startMinutes = parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1])
-    const endMinutes = parseInt(end.split(':')[0]) * 60 + parseInt(end.split(':')[1])
+    const startMinutes =
+      parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1])
+    const endMinutes =
+      parseInt(end.split(':')[0]) * 60 + parseInt(end.split(':')[1])
 
     if (endMinutes <= startMinutes) {
       return '종료 시간은 시작 시간보다 늦어야 합니다'
     }
 
-    if ((endMinutes - startMinutes) < 30) {
+    if (endMinutes - startMinutes < 30) {
       return '최소 30분 이상 예약해야 합니다'
     }
 
@@ -126,7 +139,12 @@ export function BookingCreateModal({
   }
 
   // 가용성 확인 함수
-  const checkAvailability = async (roomId: string, date: string, startTime: string, endTime: string) => {
+  const checkAvailability = async (
+    roomId: string,
+    date: string,
+    startTime: string,
+    endTime: string
+  ) => {
     if (!roomId || !date || !startTime || !endTime) {
       setConflictWarning('')
       return
@@ -136,11 +154,18 @@ export function BookingCreateModal({
     setConflictWarning('')
 
     try {
-      const result = await RoomService.checkAvailability(roomId, date, startTime, endTime)
-      
+      const result = await RoomService.checkAvailability(
+        roomId,
+        date,
+        startTime,
+        endTime
+      )
+
       if (result.success && result.data) {
         if (!result.data.available) {
-          setConflictWarning('선택한 시간에 다른 예약이 있습니다. 다른 시간을 선택해 주세요.')
+          setConflictWarning(
+            '선택한 시간에 다른 예약이 있습니다. 다른 시간을 선택해 주세요.'
+          )
         } else {
           setConflictWarning('')
         }
@@ -153,13 +178,13 @@ export function BookingCreateModal({
   }
 
   const handleInputChange = (field: keyof BookingFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    
+    setFormData((prev) => ({ ...prev, [field]: value }))
+
     // 실시간 유효성 검사
     if (field === 'title' && value.trim() === '') {
-      setFieldErrors(prev => ({ ...prev, title: '제목을 입력해주세요' }))
+      setFieldErrors((prev) => ({ ...prev, title: '제목을 입력해주세요' }))
     } else if (field === 'title') {
-      setFieldErrors(prev => ({ ...prev, title: '' }))
+      setFieldErrors((prev) => ({ ...prev, title: '' }))
     }
 
     // 시간 검증
@@ -167,13 +192,13 @@ export function BookingCreateModal({
       const startTime = field === 'startTime' ? value : formData.startTime
       const endTime = field === 'endTime' ? value : formData.endTime
       const timeError = validateTimeSlots(startTime, endTime)
-      
+
       if (timeError) {
-        setFieldErrors(prev => ({ ...prev, time: timeError }))
+        setFieldErrors((prev) => ({ ...prev, time: timeError }))
         setConflictWarning('')
       } else {
-        setFieldErrors(prev => ({ ...prev, time: '' }))
-        
+        setFieldErrors((prev) => ({ ...prev, time: '' }))
+
         // 시간이 유효하면 가용성 확인
         const currentRoomId = fixedRoomId || formData.roomId
         if (currentRoomId && formData.date) {
@@ -184,9 +209,9 @@ export function BookingCreateModal({
 
     // 회의실이나 날짜가 변경되면 가용성 확인
     if ((field === 'roomId' || field === 'date') && !fieldErrors.time) {
-      const roomId = field === 'roomId' ? value : (fixedRoomId || formData.roomId)
+      const roomId = field === 'roomId' ? value : fixedRoomId || formData.roomId
       const date = field === 'date' ? value : formData.date
-      
+
       if (roomId && date && formData.startTime && formData.endTime) {
         checkAvailability(roomId, date, formData.startTime, formData.endTime)
       }
@@ -234,11 +259,13 @@ export function BookingCreateModal({
       date: formData.date,
       startTime: formData.startTime,
       endTime: formData.endTime,
-      participantIds: participantIds.length > 0 ? participantIds : undefined
+      // 색상이 기본값이면 undefined로 보내서 백엔드에서 랜덤 할당
+      color: formData.color === 'bg-blue-500' ? undefined : formData.color,
+      participantIds: participantIds.length > 0 ? participantIds : undefined,
     }
 
     try {
-      const result = await createBookingAction(bookingData)
+      const result = await BookingService.createBooking(bookingData)
 
       if (result.success && result.data) {
         onBookingCreated(result.data)
@@ -261,7 +288,7 @@ export function BookingCreateModal({
       formData.date &&
       formData.startTime &&
       formData.endTime &&
-      !Object.values(fieldErrors).some(error => error) &&
+      !Object.values(fieldErrors).some((error) => error) &&
       !conflictWarning &&
       !availabilityChecking
     )
@@ -288,8 +315,16 @@ export function BookingCreateModal({
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm backdrop-blur-sm">
             <div className="flex items-center space-x-2">
-              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-4 h-4 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>{error}</span>
             </div>
@@ -338,7 +373,7 @@ export function BookingCreateModal({
               <MapPin className="w-4 h-4 inline mr-1" />
               회의실 *
             </label>
-            
+
             {fixedRoomId && roomInfo ? (
               // 고정된 회의실인 경우 읽기 전용으로 표시
               <div className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white backdrop-blur-lg">
@@ -346,7 +381,8 @@ export function BookingCreateModal({
                   <MapPin className="w-4 h-4 text-white/60" />
                   <span className="font-medium">{roomInfo.name}</span>
                   <span className="text-white/60">
-                    ({roomInfo.location && `${roomInfo.location}, `}최대 {roomInfo.capacity}명)
+                    ({roomInfo.location && `${roomInfo.location}, `}최대{' '}
+                    {roomInfo.capacity}명)
                   </span>
                 </div>
               </div>
@@ -358,24 +394,31 @@ export function BookingCreateModal({
                 required
                 disabled={roomsLoading}
                 className={cn(
-                  "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 backdrop-blur-lg",
-                  "focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20",
-                  "hover:border-white/20 transition-all duration-200",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  'w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 backdrop-blur-lg',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20',
+                  'hover:border-white/20 transition-all duration-200',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
                   fieldErrors.roomId ? 'border-red-500/50' : ''
                 )}
               >
                 <option value="" className="bg-gray-800 text-white">
-                  {roomsLoading ? '회의실 목록 로딩 중...' : '회의실을 선택해주세요'}
+                  {roomsLoading
+                    ? '회의실 목록 로딩 중...'
+                    : '회의실을 선택해주세요'}
                 </option>
-                {rooms.map(room => (
-                  <option key={room.id} value={room.id} className="bg-gray-800 text-white">
-                    {room.name} ({room.location && `${room.location}, `}최대 {room.capacity}명)
+                {rooms.map((room) => (
+                  <option
+                    key={room.id}
+                    value={room.id}
+                    className="bg-gray-800 text-white"
+                  >
+                    {room.name} ({room.location && `${room.location}, `}최대{' '}
+                    {room.capacity}명)
                   </option>
                 ))}
               </select>
             )}
-            
+
             {fieldErrors.roomId && (
               <p className="mt-1 text-sm text-red-400">{fieldErrors.roomId}</p>
             )}
@@ -392,7 +435,9 @@ export function BookingCreateModal({
               value={formData.date}
               onChange={(e) => handleInputChange('date', e.target.value)}
               min={toKSTDateString(new Date())}
-              max={toKSTDateString(new Date(new Date().setFullYear(new Date().getFullYear() + 1)))}
+              max={toKSTDateString(
+                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+              )}
               required
               className={cn(fieldErrors.date ? 'border-red-500/50' : '')}
               radius="xl"
@@ -415,13 +460,17 @@ export function BookingCreateModal({
                 onChange={(e) => handleInputChange('startTime', e.target.value)}
                 required
                 className={cn(
-                  "w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white backdrop-blur-lg",
-                  "focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20",
-                  "hover:border-white/20 transition-all duration-200"
+                  'w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white backdrop-blur-lg',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20',
+                  'hover:border-white/20 transition-all duration-200'
                 )}
               >
-                {TIME_SLOTS.map(time => (
-                  <option key={time} value={time} className="bg-gray-800 text-white">
+                {TIME_SLOTS.map((time) => (
+                  <option
+                    key={time}
+                    value={time}
+                    className="bg-gray-800 text-white"
+                  >
                     {time}
                   </option>
                 ))}
@@ -437,13 +486,17 @@ export function BookingCreateModal({
                 onChange={(e) => handleInputChange('endTime', e.target.value)}
                 required
                 className={cn(
-                  "w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white backdrop-blur-lg",
-                  "focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20",
-                  "hover:border-white/20 transition-all duration-200"
+                  'w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white backdrop-blur-lg',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20',
+                  'hover:border-white/20 transition-all duration-200'
                 )}
               >
-                {TIME_SLOTS.map(time => (
-                  <option key={time} value={time} className="bg-gray-800 text-white">
+                {TIME_SLOTS.map((time) => (
+                  <option
+                    key={time}
+                    value={time}
+                    className="bg-gray-800 text-white"
+                  >
                     {time}
                   </option>
                 ))}
@@ -466,24 +519,100 @@ export function BookingCreateModal({
           {conflictWarning && (
             <div className="mt-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm backdrop-blur-sm">
               <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <span>{conflictWarning}</span>
               </div>
             </div>
           )}
 
-          {!conflictWarning && !availabilityChecking && formData.roomId && formData.date && formData.startTime && formData.endTime && !fieldErrors.time && (
-            <div className="mt-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm backdrop-blur-sm">
-              <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>선택한 시간에 예약 가능합니다</span>
+          {!conflictWarning &&
+            !availabilityChecking &&
+            formData.roomId &&
+            formData.date &&
+            formData.startTime &&
+            formData.endTime &&
+            !fieldErrors.time && (
+              <div className="mt-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm backdrop-blur-sm">
+                <div className="flex items-center space-x-2">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>선택한 시간에 예약 가능합니다</span>
+                </div>
               </div>
+            )}
+
+          {/* 색상 선택 */}
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-2">
+              <Palette className="w-4 h-4 inline mr-1" />
+              색상
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[...BOOKING_COLORS]
+                .sort(() => Math.random() - 0.5)
+                .map((color) => {
+                  const colorMap: Record<string, string> = {
+                    'bg-blue-500': '#3b82f6',
+                    'bg-green-500': '#10b981',
+                    'bg-purple-500': '#a855f7',
+                    'bg-pink-500': '#ec4899',
+                    'bg-yellow-500': '#eab308',
+                    'bg-orange-500': '#f97316',
+                    'bg-indigo-500': '#6366f1',
+                    'bg-red-500': '#ef4444',
+                    'bg-teal-500': '#14b8a6',
+                    'bg-cyan-500': '#06b6d4',
+                  }
+                  const hexColor = colorMap[color] || '#3b82f6'
+                  const isSelected = formData.color === color
+
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => handleInputChange('color', color)}
+                      className={cn(
+                        'w-10 h-10 rounded-lg transition-all duration-200',
+                        'border-2',
+                        isSelected
+                          ? 'border-white scale-110 shadow-lg shadow-white/20'
+                          : 'border-white/30 hover:border-white/50',
+                        'hover:scale-105'
+                      )}
+                      style={{
+                        backgroundColor: hexColor,
+                      }}
+                      title={color}
+                    >
+                      {isSelected && (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-white/90"></div>
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
             </div>
-          )}
+          </div>
 
           {/* 참여자 */}
           <div>
@@ -494,14 +623,18 @@ export function BookingCreateModal({
             <GlassInput
               type="text"
               value={formData.participantEmails}
-              onChange={(e) => handleInputChange('participantEmails', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('participantEmails', e.target.value)
+              }
               placeholder="이메일을 쉼표로 구분해서 입력 (선택사항)"
               disabled
               radius="xl"
               inputSize="sm"
               className="opacity-50"
             />
-            <p className="mt-1 text-xs text-white/40">참여자 기능은 추후 구현 예정입니다</p>
+            <p className="mt-1 text-xs text-white/40">
+              참여자 기능은 추후 구현 예정입니다
+            </p>
           </div>
 
           {/* 버튼 */}
@@ -516,7 +649,7 @@ export function BookingCreateModal({
             >
               취소
             </GlassButton>
-            
+
             <GlassButton
               type="submit"
               disabled={isLoading || !isFormValid()}

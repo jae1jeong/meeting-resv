@@ -6,7 +6,7 @@ import { RoomList } from '@/packages/frontend/components/admin/rooms/room-list'
 import { GlassButton } from '@/packages/frontend/components/ui/glass-button'
 import { Plus, Search, Filter, DoorOpen, Users, Calendar, TrendingUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { deleteRoom } from '@/packages/backend/actions/admin/room-actions'
+import { AdminService } from '@/packages/frontend/services/admin.service'
 
 interface Room {
   id: string
@@ -66,9 +66,13 @@ export default function AdminRoomsClient({
   const handleDeleteRoom = async (roomId: string) => {
     if (confirm('정말로 이 회의실을 삭제하시겠습니까? 관련된 모든 예약도 삭제됩니다.')) {
       try {
-        await deleteRoom(roomId)
-        // 로컬 상태 업데이트
-        setRooms(rooms.filter(r => r.id !== roomId))
+        const result = await AdminService.deleteRoom(roomId)
+        if (result.success) {
+          // 로컬 상태 업데이트
+          setRooms(rooms.filter(r => r.id !== roomId))
+        } else {
+          alert(result.error?.message || '회의실 삭제에 실패했습니다.')
+        }
       } catch (error) {
         console.error('회의실 삭제 실패:', error)
         alert('회의실 삭제에 실패했습니다.')

@@ -16,10 +16,10 @@ export default async function GroupLayout({ children, params }: GroupLayoutProps
   // params 해결
   const { groupCode } = await params
 
-  // groupCode로 그룹 조회 및 멤버십 확인
+  // groupCode로 그룹 조회 및 멤버십 확인 (inviteCode 사용)
   const group = await prisma.group.findFirst({
     where: {
-      slug: groupCode,
+      inviteCode: groupCode.toUpperCase(),
       members: {
         some: {
           userId: user.id
@@ -43,11 +43,11 @@ export default async function GroupLayout({ children, params }: GroupLayoutProps
           some: { userId: user.id }
         }
       },
-      select: { slug: true }
+      select: { inviteCode: true }
     })
 
-    if (firstGroup?.slug) {
-      redirect(`/${firstGroup.slug}/rooms`)
+    if (firstGroup?.inviteCode) {
+      redirect(`/${firstGroup.inviteCode}/rooms`)
     } else {
       // 그룹이 없는 경우 그룹 생성/가입 페이지로
       redirect('/groups/join')
@@ -71,7 +71,7 @@ export default async function GroupLayout({ children, params }: GroupLayoutProps
 
   const currentGroup = {
     id: group.id,
-    slug: group.slug!,
+    inviteCode: group.inviteCode!,
     name: group.name,
     description: group.description,
     role: group.members[0].role
@@ -79,7 +79,7 @@ export default async function GroupLayout({ children, params }: GroupLayoutProps
 
   const allUserGroups = userGroups.map(g => ({
     id: g.id,
-    slug: g.slug!,
+    inviteCode: g.inviteCode!,
     name: g.name,
     description: g.description,
     role: g.members[0].role
@@ -87,14 +87,15 @@ export default async function GroupLayout({ children, params }: GroupLayoutProps
 
   return (
     <GroupProvider initialGroup={currentGroup} initialUserGroups={allUserGroups}>
-      <div className="flex">
+      <div className="relative min-h-screen w-full">
         {/* Background Image */}
         <Image
           src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop"
           alt="Beautiful mountain landscape"
           fill
-          className="object-cover"
+          className="object-cover fixed inset-0 -z-10"
           priority
+          sizes="100vw"
         />
         {children}
       </div>

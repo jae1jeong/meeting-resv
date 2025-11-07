@@ -38,7 +38,7 @@ export async function GET() {
 
     const result = groups.map(group => ({
       id: group.id,
-      slug: group.slug,
+      inviteCode: group.inviteCode,
       name: group.name,
       description: group.description,
       role: group.members[0]?.role

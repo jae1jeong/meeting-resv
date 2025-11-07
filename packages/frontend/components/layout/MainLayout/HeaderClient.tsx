@@ -1,26 +1,68 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Menu, Settings, Home, Calendar, MapPin, LogOut } from "lucide-react"
+import { useMemo, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import type { LucideIcon } from 'lucide-react'
+import { Menu, Calendar, MapPin, LogOut, Shield } from "lucide-react"
 import { cn } from '@/packages/frontend/lib/utils'
 import { useAuth } from '@/packages/frontend/contexts/auth-context'
 
 interface HeaderClientProps {
   onMenuClick?: () => void
-  onSettingsClick?: () => void
 }
 
-export function HeaderClient({ onMenuClick, onSettingsClick }: HeaderClientProps) {
+interface MenuItem {
+  icon: LucideIcon
+  label: string
+  href: string
+}
+
+export function HeaderClient({ onMenuClick }: HeaderClientProps) {
   const [showMenu, setShowMenu] = useState(false)
   const router = useRouter()
-  const { signOut, isAuthenticated } = useAuth()
+  const pathname = usePathname()
+  const { signOut, isAuthenticated, session } = useAuth()
 
-  const menuItems = [
-    { icon: Home, label: '홈', href: '/' },
-    { icon: MapPin, label: '회의실 목록', href: '/rooms' },
-    { icon: Calendar, label: '예약 관리', href: '/bookings' },
-  ]
+  const groupSegment = useMemo(() => {
+    const segments = pathname.split('/').filter(Boolean)
+    const [first] = segments
+    if (!first) return null
+    // 전역 관리자 페이지 등 특정 경로 제외
+    const reserved = new Set([
+      'login',
+      'signup',
+      'admin',
+      'api',
+      'groups'
+    ])
+    if (reserved.has(first)) {
+      return null
+    }
+    return first
+  }, [pathname])
+
+  const baseGroupPath = groupSegment ? `/${groupSegment}` : ''
+  const isAdminUser = Boolean(session?.user && (session.user as { isAdmin?: boolean }).isAdmin)
+
+  const menuItems: MenuItem[] = useMemo(() => {
+    const items: MenuItem[] = []
+
+    if (baseGroupPath) {
+      items.push(
+        { icon: MapPin, label: '회의실 목록', href: `${baseGroupPath}/rooms` },
+        { icon: Calendar, label: '예약 관리', href: `${baseGroupPath}/bookings` }
+      )
+      if (isAdminUser) {
+        items.push({
+          icon: Shield,
+          label: '관리자 페이지',
+          href: `${baseGroupPath}/admin`
+        })
+      }
+    }
+
+    return items
+  }, [baseGroupPath, isAdminUser])
 
   const handleMenuItemClick = (href: string) => {
     router.push(href)
@@ -73,10 +115,6 @@ export function HeaderClient({ onMenuClick, onSettingsClick }: HeaderClientProps
           </div>
         )}
       </div>
-      
-      <button onClick={onSettingsClick} className="hover:opacity-80 transition-opacity">
-        <Settings className="h-6 w-6 text-white drop-shadow-md" />
-      </button>
     </>
   )
 }

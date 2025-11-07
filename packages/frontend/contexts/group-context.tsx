@@ -6,7 +6,7 @@ import { useGroupCode } from '@/packages/frontend/hooks/use-group-code'
 
 interface Group {
   id: string
-  slug: string
+  inviteCode: string
   name: string
   description?: string | null
   role: string
@@ -16,7 +16,7 @@ interface GroupContextType {
   currentGroup: Group | null
   userGroups: Group[]
   isLoading: boolean
-  switchGroup: (groupSlug: string) => void
+  switchGroup: (groupInviteCode: string) => void
   refreshGroups: () => Promise<void>
 }
 
@@ -39,18 +39,18 @@ export function GroupProvider({ children, initialGroup, initialUserGroups = [] }
   // groupCode가 변경되면 currentGroup 업데이트
   useEffect(() => {
     if (groupCode && userGroups.length > 0) {
-      const group = userGroups.find(g => g.slug === groupCode)
+      const group = userGroups.find(g => g.inviteCode === groupCode.toUpperCase())
       if (group) {
         setCurrentGroup(group)
       }
     }
   }, [groupCode, userGroups])
 
-  const switchGroup = (groupSlug: string) => {
-    const group = userGroups.find(g => g.slug === groupSlug)
+  const switchGroup = (groupInviteCode: string) => {
+    const group = userGroups.find(g => g.inviteCode === groupInviteCode.toUpperCase())
     if (group) {
       setCurrentGroup(group)
-      router.push(`/${groupSlug}/rooms`)
+      router.push(`/${groupInviteCode.toUpperCase()}/rooms`)
     }
   }
 
